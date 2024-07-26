@@ -9,23 +9,29 @@ export function Triangle() {
   const customMaterial = extendMaterial(new THREE.MeshStandardMaterial(), {
     class: THREE.ShaderMaterial, // In this case ShaderMaterial would be fine too, just for some features such as envMap this is required
 
-    vertexHeader: "attribute float randVal; uniform float time;",
+    vertexHeader: `
+    attribute float randVal; 
+    uniform float time;
+    `,
     vertex: {
-      transformEnd:
-        "transformed += randVal * (0.5 * sin(time) + 0.5) * normal;",
+      transformEnd: `
+      
+      transformed += randVal * (0.5 * sin(time) + 0.5) * normal;
+      
+      `,
     },
 
     uniforms: {
       time: {
-        mixed: true, // Uniform will be passed to a derivative material (MeshDepthMaterial below)
-        linked: true, // Similar as shared, but only for derivative materials, so wavingMaterial will have it's own, but share with it's shadow material
+        mixed: true,
+        linked: true,
         value: 0,
       },
     },
   });
 
   useFrame(() => {
-    customMaterial.uniforms.time.value += 0.01;
+    customMaterial.uniforms.time.value += 0.02;
   });
 
   const len = geometry.attributes.position.count;
