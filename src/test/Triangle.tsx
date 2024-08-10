@@ -1,16 +1,15 @@
 import * as THREE from "three";
-import vertexShader from "./glsl/shader.vert?raw";
-import fragmentShader from "./glsl/shader.frag?raw";
 import { useFrame } from "@react-three/fiber";
 import { extendMaterial } from "three-extend-material";
 
 export function Triangle() {
   const geometry = new THREE.SphereGeometry(1, 32, 32).toNonIndexed();
   const customMaterial = extendMaterial(new THREE.MeshStandardMaterial(), {
-    class: THREE.ShaderMaterial, // In this case ShaderMaterial would be fine too, just for some features such as envMap this is required
+    class: THREE.ShaderMaterial,
 
     vertexHeader: `
     attribute float randVal; 
+    attribute float height;
     uniform float time;
 
     mat4 rotationMatrix(vec3 axis, float angle) {
@@ -32,10 +31,9 @@ export function Triangle() {
     `,
     vertex: {
       transformEnd: `
-      
-      transformed += (1.0 * sin(time) + 1.0) * randVal * normal;
-      transformed = rotate(transformed, vec3(0.0, 1.0, 0.0), time);
-      
+      float progress = clamp(time - height - 1.5, 0.0, 0.2);
+      transformed += progress * randVal * normal;
+      transformed = rotate(transformed, vec3(0.0, 1.0, 0.0), time * progress);
       `,
     },
 
@@ -49,18 +47,18 @@ export function Triangle() {
   });
 
   useFrame(() => {
-    customMaterial.uniforms.time.value += 0.02;
+    customMaterial.uniforms.time.value += 0.01;
   });
 
   const len = geometry.attributes.position.count;
-  const randoms = new Float32Array(len * 3);
-  for (let i = 0; i < len; i += 3) {
-    const r = Math.random();
-    randoms[i] = r;
-    randoms[i + 1] = r;
-    randoms[i + 2] = r;
+  const randoms = new Float32Array(len);
+  const heights = new Float32Array(len);
+  for (let i = 0; i < len; i++) {
+    randoms[i] = Math.random();
+    heights[i] = -geometry.attributes.position.getY(i);
   }
   geometry.setAttribute("randVal", new THREE.BufferAttribute(randoms, 1));
+  geometry.setAttribute("height", new THREE.BufferAttribute(heights, 1));
 
   return <mesh material={customMaterial} geometry={geometry}></mesh>;
 }
