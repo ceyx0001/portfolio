@@ -37,7 +37,7 @@ export function Triangle() {
       float locProg = clamp ((uProgress - 0.8 * prog) / 0.2, 0.0, 1.0);
 
       transformed = transformed - aCenter;
-      transformed += 3.0*normal*aRand*locProg;
+      transformed += 1.0*normal*aRand*locProg;
 
       transformed *= (1.0-locProg);
       transformed += aCenter;
@@ -63,7 +63,8 @@ export function Triangle() {
 
   useFrame(() => {
     customMaterial.uniforms.uTime.value += 0.01;
-    customMaterial.uniforms.uProgress.value = (Math.sin(customMaterial.uniforms.uTime.value) + 1) / 2;
+    customMaterial.uniforms.uProgress.value =
+      (Math.sin(customMaterial.uniforms.uTime.value) + 1) / 2;
   });
 
   const len = geometry.attributes.position.count;
