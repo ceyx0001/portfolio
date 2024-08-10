@@ -42,8 +42,13 @@ export function Triangle() {
       transformed *= (1.0-locProg);
       transformed += aCenter;
 
-      transformed = rotate(transformed, vec3(0.0, 1.0, 0.0), aRand*locProg*3.14);
+      transformed = rotate(transformed, vec3(10.0, 1.0, 0.0), aRand*locProg*3.14);
+      transformed.x -= 13.0 * locProg;
 
+      float curveAmount = 10.0 * locProg;
+      float modifiedLocProg = pow(locProg, 1.5);
+      transformed.z += curveAmount * sin(modifiedLocProg);
+      transformed.z += curveAmount * sin(modifiedLocProg);
       `,
     },
 
