@@ -42,7 +42,7 @@ export function OrbModel() {
       (Math.sin(customMaterial.uniforms.uTime.value) + 1) / 2;
 
     if (groupRef.current) {
-      groupRef.current.rotation.y += 0.005;
+      //groupRef.current.rotation.y += 0.005;
     }
   });
 
@@ -107,7 +107,7 @@ export function OrbModel() {
   geometry.setAttribute("aRand", new THREE.BufferAttribute(randoms, 1));
   geometry.setAttribute("aCenter", new THREE.BufferAttribute(centers, 3));
 
-  const scale = 2.0;
+  const scale = 0.25;
   return (
     <group ref={groupRef}>
       <mesh
@@ -123,7 +123,7 @@ export function OrbScene() {
   const theta = useRef(0);
 
   useFrame((state) => {
-    theta.current += 0.0025;
+    /*theta.current += 0.0025;
 
     state.camera.position.x = Math.sin(theta.current) * 10;
     state.camera.position.z = Math.cos(theta.current) * 10;
@@ -133,7 +133,7 @@ export function OrbScene() {
     state.camera.position.z = -Math.cos(theta.current + 1) * 45;
     state.camera.position.y = 20 * Math.cos(theta.current) + 20;
 
-    state.camera.lookAt(0, 0, 0);
+    state.camera.lookAt(0, 0, 0);*/
   });
 
   return (
