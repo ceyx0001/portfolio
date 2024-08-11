@@ -1,9 +1,9 @@
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { extendMaterial } from "three-extend-material";
+import { useGLTF } from "@react-three/drei";
 
 export function Triangle() {
-  const geometry = new THREE.SphereGeometry(1, 32, 32).toNonIndexed();
   const customMaterial = extendMaterial(new THREE.MeshStandardMaterial(), {
     class: THREE.ShaderMaterial,
 
@@ -33,9 +33,10 @@ export function Triangle() {
     vertex: {
       transformEnd: `
 
-      float prog = (position.x + 1.0) / 2.0;
-      float locProg = clamp ((uProgress - 0.8 * prog) / 0.2, 0.0, 1.0);
-
+      float prog = position.x + 6.6;
+      float locProg = clamp ((uProgress - 0.045 * prog) / 0.2, 0.0, 1.0);
+      //locProg = uProgress;
+      
       transformed = transformed - aCenter;
       transformed += 1.0*normal*aRand*locProg;
 
@@ -43,7 +44,7 @@ export function Triangle() {
       transformed += aCenter;
 
       transformed = rotate(transformed, vec3(10.0, 1.0, 0.0), aRand*locProg*3.14);
-      transformed.x -= 13.0 * locProg;
+      transformed.x -= 20.0 * locProg;
 
       float curveAmount = 10.0 * locProg;
       float modifiedLocProg = pow(locProg, 1.5);
@@ -72,7 +73,36 @@ export function Triangle() {
       (Math.sin(customMaterial.uniforms.uTime.value) + 1) / 2;
   });
 
-  const len = geometry.attributes.position.count;
+  const { scene: orb } = useGLTF("/assets/orb.glb");
+  let mesh: THREE.Mesh | undefined;
+  orb.traverse((child) => {
+    if (child instanceof THREE.Mesh) {
+      mesh = child;
+    }
+  });
+  const s = 0.25;
+  let geometry;
+  if (mesh) {
+    geometry = mesh.geometry.toNonIndexed();
+    mesh.geometry = geometry.toNonIndexed();
+  } else {
+    throw new Error("Mesh not found in the GLTF scene.");
+  }
+
+  let len = geometry.attributes.position.count;
+  if (len % 3 !== 0) {
+    const verticesToRemove = len % 3;
+    const newPositions = new Float32Array((len - verticesToRemove) * 3);
+    newPositions.set(
+      geometry.attributes.position.array.slice(0, newPositions.length)
+    );
+    geometry.setAttribute(
+      "position",
+      new THREE.BufferAttribute(newPositions, 3)
+    );
+    len = geometry.attributes.position.count;
+  }
+  
   const randoms = new Float32Array(len);
   const centers = new Float32Array(len * 3);
   for (let i = 0; i < len; i += 3) {
@@ -105,5 +135,8 @@ export function Triangle() {
   geometry.setAttribute("aRand", new THREE.BufferAttribute(randoms, 1));
   geometry.setAttribute("aCenter", new THREE.BufferAttribute(centers, 3));
 
-  return <mesh material={customMaterial} geometry={geometry}></mesh>;
+  //return <mesh material={customMaterial} geometry={geometry}></mesh>;
+  return (
+    <mesh geometry={geometry} material={customMaterial} scale={[s, s, s]} />
+  );
 }
