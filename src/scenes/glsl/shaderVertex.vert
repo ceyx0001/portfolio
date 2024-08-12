@@ -11,7 +11,7 @@ transformed += aCenter;
 // Rotate around the z-axis for horizontal rotation
 transformed = rotate(transformed, vec3(0.0, 1.0, 0.0), -aRand * locProg);
 
-float angle = locProg * 1.5 * 3.14159265359; // 2π for a full circle
+float angle = locProg * 1.75 * 3.14159265359; // 2π for a full circle
 
 // Calculate the new x and y positions
 float radius = 50.0; // Adjust the radius as needed

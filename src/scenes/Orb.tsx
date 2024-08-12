@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { useFrame, useLoader, useThree } from "@react-three/fiber";
 import { extendMaterial, CustomMaterial } from "three-extend-material";
 import { Html, useGLTF } from "@react-three/drei";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useRef, useState } from "react";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 import vertexShaderHeader from "./glsl/shaderHeader.vert?raw";
@@ -10,7 +10,19 @@ import vertexShaderVertex from "./glsl/shaderVertex.vert?raw";
 import fragmentShaderHeader from "./glsl/shaderHeader.frag?raw";
 import fragmentShaderFragment from "./glsl/shaderVertex.frag?raw";
 
-export function OrbModel({ transitioning }: { transitioning: boolean }) {
+const OrbState = {
+  TRANSITIONING: "transitioning",
+  FLOATING: "floating",
+  DESTROYED: "destroyed",
+};
+
+export function OrbModel({
+  orbState,
+  setOrbState,
+}: {
+  orbState: string;
+  setOrbState: React.Dispatch<React.SetStateAction<string>>;
+}) {
   const meshRef = useRef<THREE.Mesh>(null);
   const hdr = useLoader(RGBELoader, "/assets/gradient.hdr");
   hdr.mapping = THREE.EquirectangularReflectionMapping;
@@ -34,25 +46,39 @@ export function OrbModel({ transitioning }: { transitioning: boolean }) {
       uReflectivity: { value: 0.5 },
     },
   });
-
-  useEffect(() => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y = 0;
-    }
-  }, [transitioning]);
+  const { camera } = useThree();
+  let duration = 0;
 
   useFrame(() => {
-    if (transitioning) {
-      if (customMaterial.uniforms.uProgress.value < 2) {
-        customMaterial.uniforms.uProgress.value += 0.005;
-      }
-    } else {
-      if (meshRef.current) {
-        meshRef.current.rotation.y += 0.005;
-      }
+    if (!meshRef.current || orbState === OrbState.DESTROYED) {
+      return;
     }
 
-    customMaterial.uniforms.uTime.value += 0.005;
+    if (orbState !== OrbState.TRANSITIONING) {
+      meshRef.current.rotation.y += 0.005;
+      customMaterial.uniforms.uTime.value += 0.005;
+    } else {
+      const distance = 50;
+      const direction = new THREE.Vector3();
+      camera.getWorldDirection(direction);
+      direction.multiplyScalar(distance);
+
+      const targetPosition = new THREE.Vector3();
+      targetPosition.copy(camera.position).add(direction);
+
+      meshRef.current.quaternion.slerp(camera.quaternion, 0.01);
+      meshRef.current.position.lerp(targetPosition, 0.01);
+
+      duration += 1;
+
+      if (duration > 180) {
+        if (customMaterial.uniforms.uProgress.value < 2) {
+          customMaterial.uniforms.uProgress.value += 0.005;
+        } else {
+          setOrbState(OrbState.DESTROYED);
+        }
+      }
+    }
   });
 
   const { scene: orb } = useGLTF("/assets/orb.glb");
@@ -128,39 +154,34 @@ export function OrbModel({ transitioning }: { transitioning: boolean }) {
 }
 
 export function OrbScene() {
-  const transitionPosition = { x: 45, y: 0, z: 10 };
-  const theta = useRef(0);
-  const [transitioning, setTransitioning] = useState(false);
-  const { camera } = useThree();
-
-  function handleTransition() {
-    theta.current = 0;
-    camera.position.x = transitionPosition.x;
-    camera.position.y = transitionPosition.y;
-    camera.position.z = transitionPosition.z;
-    setTransitioning(true);
-  }
+  const [orbState, setOrbState] = useState(OrbState.FLOATING);
+  let theta = 0;
 
   useFrame((state) => {
-    if (transitioning) {
+    if (
+      orbState === OrbState.TRANSITIONING ||
+      orbState === OrbState.DESTROYED
+    ) {
       return;
     }
 
-    theta.current += 0.0025;
-    state.camera.position.x = -Math.sin(theta.current + 1) * 45;
-    state.camera.position.z = -Math.cos(theta.current + 1) * 45;
-    state.camera.position.y = 20 * Math.cos(theta.current) + 20;
+    theta += 0.0025;
+    state.camera.position.x = -Math.sin(theta + 1) * 45;
+    state.camera.position.z = -Math.cos(theta + 1) * 45;
+    state.camera.position.y = 20 * Math.cos(theta) + 20;
     state.camera.lookAt(0, 0, 0);
   });
 
   return (
     <Suspense>
       <Html>
-        <button onClick={handleTransition}>Transition</button>
+        <button onClick={() => setOrbState(OrbState.TRANSITIONING)}>
+          Transition
+        </button>
       </Html>
       <EffectComposer>
         <Bloom intensity={1.5} luminanceThreshold={0.3} />
-        <OrbModel transitioning={transitioning} />
+        {orbState !== OrbState.DESTROYED ? <OrbModel orbState={orbState} setOrbState={setOrbState} /> : <></>}
       </EffectComposer>
     </Suspense>
   );
