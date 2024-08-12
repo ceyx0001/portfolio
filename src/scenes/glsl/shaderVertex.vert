@@ -1,5 +1,5 @@
 float prog = position.x + 6.6;
-float locProg = clamp((uProgress - 0.045 * prog) / 0.2, 0.0, 1.0);
+float locProg = clamp((uProgress - 0.045 * prog) / 0.2, 0.0, 2.0);
 
 transformed = transformed - aCenter;
 
@@ -11,10 +11,10 @@ transformed += aCenter;
 // Rotate around the z-axis for horizontal rotation
 transformed = rotate(transformed, vec3(0.0, 1.0, 0.0), -aRand * locProg);
 
-float angle = locProg * 2.0 * 3.14159265359; // 2π for a full circle
+float angle = locProg * 1.5 * 3.14159265359; // 2π for a full circle
 
 // Calculate the new x and y positions
-float radius = 100.0; // Adjust the radius as needed
+float radius = 50.0; // Adjust the radius as needed
 float newX = radius * sin(angle);
 float newZ = radius * cos(angle);
 

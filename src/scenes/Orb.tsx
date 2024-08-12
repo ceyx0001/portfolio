@@ -1,8 +1,8 @@
 import * as THREE from "three";
-import { useFrame, useLoader } from "@react-three/fiber";
+import { useFrame, useLoader, useThree } from "@react-three/fiber";
 import { extendMaterial, CustomMaterial } from "three-extend-material";
-import { useGLTF } from "@react-three/drei";
-import { Suspense, useRef } from "react";
+import { Html, useGLTF } from "@react-three/drei";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 import vertexShaderHeader from "./glsl/shaderHeader.vert?raw";
@@ -10,11 +10,10 @@ import vertexShaderVertex from "./glsl/shaderVertex.vert?raw";
 import fragmentShaderHeader from "./glsl/shaderHeader.frag?raw";
 import fragmentShaderFragment from "./glsl/shaderVertex.frag?raw";
 
-export function OrbModel() {
-  const groupRef = useRef<THREE.Group>(null);
+export function OrbModel({ transitioning }: { transitioning: boolean }) {
+  const meshRef = useRef<THREE.Mesh>(null);
   const hdr = useLoader(RGBELoader, "/assets/gradient.hdr");
   hdr.mapping = THREE.EquirectangularReflectionMapping;
-
   const customMaterial = extendMaterial(new THREE.MeshStandardMaterial(), {
     class: CustomMaterial,
     vertexHeader: vertexShaderHeader,
@@ -36,14 +35,24 @@ export function OrbModel() {
     },
   });
 
-  useFrame(() => {
-    customMaterial.uniforms.uTime.value += 0.005;
-    customMaterial.uniforms.uProgress.value =
-      (Math.sin(customMaterial.uniforms.uTime.value) + 1) / 2;
-
-    if (groupRef.current) {
-      //groupRef.current.rotation.y += 0.005;
+  useEffect(() => {
+    if (meshRef.current) {
+      meshRef.current.rotation.y = 0;
     }
+  }, [transitioning]);
+
+  useFrame(() => {
+    if (transitioning) {
+      if (customMaterial.uniforms.uProgress.value < 2) {
+        customMaterial.uniforms.uProgress.value += 0.005;
+      }
+    } else {
+      if (meshRef.current) {
+        meshRef.current.rotation.y += 0.005;
+      }
+    }
+
+    customMaterial.uniforms.uTime.value += 0.005;
   });
 
   const { scene: orb } = useGLTF("/assets/orb.glb");
@@ -107,40 +116,51 @@ export function OrbModel() {
   geometry.setAttribute("aRand", new THREE.BufferAttribute(randoms, 1));
   geometry.setAttribute("aCenter", new THREE.BufferAttribute(centers, 3));
 
-  const scale = 0.25;
+  const scale = 2.0;
   return (
-    <group ref={groupRef}>
-      <mesh
-        geometry={geometry}
-        material={customMaterial}
-        scale={[scale, scale, scale]}
-      />
-    </group>
+    <mesh
+      ref={meshRef}
+      geometry={geometry}
+      material={customMaterial}
+      scale={[scale, scale, scale]}
+    />
   );
 }
 
 export function OrbScene() {
+  const transitionPosition = { x: 45, y: 0, z: 10 };
   const theta = useRef(0);
+  const [transitioning, setTransitioning] = useState(false);
+  const { camera } = useThree();
+
+  function handleTransition() {
+    theta.current = 0;
+    camera.position.x = transitionPosition.x;
+    camera.position.y = transitionPosition.y;
+    camera.position.z = transitionPosition.z;
+    setTransitioning(true);
+  }
 
   useFrame((state) => {
-    /*theta.current += 0.0025;
+    if (transitioning) {
+      return;
+    }
 
-    state.camera.position.x = Math.sin(theta.current) * 10;
-    state.camera.position.z = Math.cos(theta.current) * 10;
-    state.camera.position.y = Math.cos(theta.current);
-
+    theta.current += 0.0025;
     state.camera.position.x = -Math.sin(theta.current + 1) * 45;
     state.camera.position.z = -Math.cos(theta.current + 1) * 45;
     state.camera.position.y = 20 * Math.cos(theta.current) + 20;
-
-    state.camera.lookAt(0, 0, 0);*/
+    state.camera.lookAt(0, 0, 0);
   });
 
   return (
     <Suspense>
+      <Html>
+        <button onClick={handleTransition}>Transition</button>
+      </Html>
       <EffectComposer>
         <Bloom intensity={1.5} luminanceThreshold={0.3} />
-        <OrbModel />
+        <OrbModel transitioning={transitioning} />
       </EffectComposer>
     </Suspense>
   );
