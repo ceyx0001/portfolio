@@ -7,7 +7,7 @@ export default function App() {
     <div style={{ height: "100vh" }}>
       <Canvas dpr={[1, 2]}>
         <OrbitControls />
-        <OrbScene/>
+        <OrbScene />
       </Canvas>
     </div>
   );

@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { useFrame, useLoader, useThree } from "@react-three/fiber";
 import { extendMaterial, CustomMaterial } from "three-extend-material";
 import { Html, useGLTF } from "@react-three/drei";
-import { Suspense, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 import vertexShaderHeader from "./glsl/shaderHeader.vert?raw";
@@ -16,14 +16,19 @@ const OrbState = {
   DESTROYED: "destroyed",
 };
 
-export function OrbModel({
+function OrbModel({
   orbState,
   setOrbState,
+  children,
+  ...props
 }: {
   orbState: string;
   setOrbState: React.Dispatch<React.SetStateAction<string>>;
+  children?: React.JSX.Element;
+  [key: string]: unknown;
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
+  const thetaRef = useRef(0);
   const hdr = useLoader(RGBELoader, "/assets/gradient.hdr");
   hdr.mapping = THREE.EquirectangularReflectionMapping;
   const customMaterial = extendMaterial(new THREE.MeshStandardMaterial(), {
@@ -48,6 +53,11 @@ export function OrbModel({
   });
   const { camera } = useThree();
   let duration = 0;
+  const [hovered, setHovered] = useState(false);
+
+  useEffect(() => {
+    document.body.style.cursor = hovered ? "pointer" : "auto";
+  }, [hovered]);
 
   useFrame(() => {
     if (!meshRef.current || orbState === OrbState.DESTROYED) {
@@ -57,8 +67,13 @@ export function OrbModel({
     if (orbState !== OrbState.TRANSITIONING) {
       meshRef.current.rotation.y += 0.005;
       customMaterial.uniforms.uTime.value += 0.005;
+      thetaRef.current += 0.0025;
+      meshRef.current.position.x = Math.sin(thetaRef.current);
+      meshRef.current.position.z = Math.cos(thetaRef.current);
+      meshRef.current.position.y = Math.cos(thetaRef.current - 1);
     } else {
-      const distance = 50;
+      setHovered(false);
+      const distance = 5;
       const direction = new THREE.Vector3();
       camera.getWorldDirection(direction);
       direction.multiplyScalar(distance);
@@ -142,47 +157,83 @@ export function OrbModel({
   geometry.setAttribute("aRand", new THREE.BufferAttribute(randoms, 1));
   geometry.setAttribute("aCenter", new THREE.BufferAttribute(centers, 3));
 
-  const scale = 2.0;
+  const scale = 0.2;
   return (
     <mesh
       ref={meshRef}
       geometry={geometry}
       material={customMaterial}
       scale={[scale, scale, scale]}
-    />
+      onPointerOver={(e) => {
+        e.stopPropagation();
+        if (orbState !== OrbState.TRANSITIONING) {
+          setHovered(true);
+        }
+      }}
+      onPointerOut={() => {
+        if (orbState !== OrbState.TRANSITIONING) {
+          setHovered(false);
+        }
+      }}
+      {...props}
+    >
+      {children}
+    </mesh>
   );
 }
 
 export function OrbScene() {
   const [orbState, setOrbState] = useState(OrbState.FLOATING);
-  let theta = 0;
+  const textPosition = new THREE.Vector3(-3, 1, 0);
+  const frontRef = useRef<HTMLDivElement>(null);
+  const behindRef = useRef<HTMLDivElement>(null);
 
-  useFrame((state) => {
-    if (
-      orbState === OrbState.TRANSITIONING ||
-      orbState === OrbState.DESTROYED
-    ) {
-      return;
+  const handleClick = () => {
+    setOrbState(OrbState.TRANSITIONING);
+    if (behindRef.current !== null && frontRef.current !== null) {
+      for (const e of behindRef.current.children) {
+        e.classList.add("fade-out");
+      }
+
+      for (const e of frontRef.current.children) {
+        e.classList.add("fade-out");
+      }
     }
-
-    theta += 0.0025;
-    state.camera.position.x = -Math.sin(theta + 1) * 45;
-    state.camera.position.z = -Math.cos(theta + 1) * 45;
-    state.camera.position.y = 20 * Math.cos(theta) + 20;
-    state.camera.lookAt(0, 0, 0);
-  });
+  };
 
   return (
     <Suspense>
-      <Html>
-        <button onClick={() => setOrbState(OrbState.TRANSITIONING)}>
-          Transition
-        </button>
+      <Html
+        position={textPosition}
+        pointerEvents="none"
+        style={{ pointerEvents: "none" }}
+        ref={frontRef}
+      >
+        <span id="text-front">HELLO</span>
       </Html>
+
       <EffectComposer>
         <Bloom intensity={1.5} luminanceThreshold={0.3} />
-        {orbState !== OrbState.DESTROYED ? <OrbModel orbState={orbState} setOrbState={setOrbState} /> : <></>}
+        {orbState !== OrbState.DESTROYED ? (
+          <OrbModel
+            orbState={orbState}
+            setOrbState={setOrbState}
+            onClick={handleClick}
+          ></OrbModel>
+        ) : (
+          <></>
+        )}
       </EffectComposer>
+
+      <Html
+        occlude="blending"
+        position={textPosition}
+        style={{ pointerEvents: "none" }}
+        ref={behindRef}
+      >
+        <span id="text-behind-blur">HELLO</span>
+        <span id="text-behind">HELLO</span>
+      </Html>
     </Suspense>
   );
 }
