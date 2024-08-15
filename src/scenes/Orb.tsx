@@ -10,7 +10,7 @@ import vertexShaderVertex from "./glsl/shaderVertex.vert?raw";
 import fragmentShaderHeader from "./glsl/shaderHeader.frag?raw";
 import fragmentShaderFragment from "./glsl/shaderVertex.frag?raw";
 
-const OrbState = {
+export const OrbState = {
   TRANSITIONING: "transitioning",
   FLOATING: "floating",
   DESTROYED: "destroyed",
@@ -182,8 +182,13 @@ function OrbModel({
   );
 }
 
-export function OrbScene() {
-  const [orbState, setOrbState] = useState(OrbState.FLOATING);
+export function OrbScene({
+  orbState,
+  setOrbState,
+}: {
+  orbState: string;
+  setOrbState: React.Dispatch<React.SetStateAction<string>>;
+}) {
   const textPosition = new THREE.Vector3(-3, 1, 0);
   const frontRef = useRef<HTMLDivElement>(null);
   const behindRef = useRef<HTMLDivElement>(null);
