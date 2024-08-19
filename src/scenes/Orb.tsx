@@ -2,19 +2,14 @@ import * as THREE from "three";
 import { useFrame, useLoader, useThree } from "@react-three/fiber";
 import { extendMaterial, CustomMaterial } from "three-extend-material";
 import { Html, useGLTF } from "@react-three/drei";
-import { Suspense, useEffect, useRef, useState } from "react";
-import { EffectComposer, Bloom } from "@react-three/postprocessing";
+import { useEffect, useRef, useState } from "react";
+//import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 import vertexShaderHeader from "./glsl/shaderHeader.vert?raw";
 import vertexShaderVertex from "./glsl/shaderVertex.vert?raw";
 import fragmentShaderHeader from "./glsl/shaderHeader.frag?raw";
 import fragmentShaderFragment from "./glsl/shaderVertex.frag?raw";
-
-export const OrbState = {
-  TRANSITIONING: "transitioning",
-  FLOATING: "floating",
-  DESTROYED: "destroyed",
-};
+import { OrbState } from "../types";
 
 function OrbModel({
   orbState,
@@ -166,12 +161,18 @@ function OrbModel({
       scale={[scale, scale, scale]}
       onPointerOver={(e) => {
         e.stopPropagation();
-        if (orbState !== OrbState.TRANSITIONING) {
+        if (
+          orbState !== OrbState.TRANSITIONING &&
+          orbState !== OrbState.UNENTERED
+        ) {
           setHovered(true);
         }
       }}
       onPointerOut={() => {
-        if (orbState !== OrbState.TRANSITIONING) {
+        if (
+          orbState !== OrbState.TRANSITIONING &&
+          orbState !== OrbState.UNENTERED
+        ) {
           setHovered(false);
         }
       }}
@@ -185,15 +186,20 @@ function OrbModel({
 export function OrbScene({
   orbState,
   setOrbState,
+  ...props
 }: {
   orbState: string;
   setOrbState: React.Dispatch<React.SetStateAction<string>>;
+  [key: string]: unknown;
 }) {
   const textPosition = new THREE.Vector3(-3, 1, 0);
   const frontRef = useRef<HTMLDivElement>(null);
   const behindRef = useRef<HTMLDivElement>(null);
 
   const handleClick = () => {
+    if (orbState === OrbState.UNENTERED) {
+      return;
+    }
     setOrbState(OrbState.TRANSITIONING);
     if (behindRef.current !== null && frontRef.current !== null) {
       for (const e of behindRef.current.children) {
@@ -207,38 +213,38 @@ export function OrbScene({
   };
 
   return (
-    <Suspense>
-      <Html
-        position={textPosition}
-        pointerEvents="none"
-        style={{ pointerEvents: "none" }}
-        ref={frontRef}
-      >
-        <span id="text-front">HELLO</span>
-      </Html>
+    <group>
+      {orbState === OrbState.FLOATING && (
+        <Html
+          position={textPosition}
+          pointerEvents="none"
+          style={{ pointerEvents: "none" }}
+          ref={frontRef}
+        >
+          <span id="text-front">HELLO</span>
+        </Html>
+      )}
 
-      <EffectComposer>
-        <Bloom intensity={1.5} luminanceThreshold={0.3} />
-        {orbState !== OrbState.DESTROYED ? (
-          <OrbModel
-            orbState={orbState}
-            setOrbState={setOrbState}
-            onClick={handleClick}
-          ></OrbModel>
-        ) : (
-          <></>
-        )}
-      </EffectComposer>
+      {orbState !== OrbState.DESTROYED && (
+        <OrbModel
+          orbState={orbState}
+          setOrbState={setOrbState}
+          onClick={handleClick}
+          {...props}
+        ></OrbModel>
+      )}
 
-      <Html
-        occlude="blending"
-        position={textPosition}
-        style={{ pointerEvents: "none" }}
-        ref={behindRef}
-      >
-        <span id="text-behind-blur">HELLO</span>
-        <span id="text-behind">HELLO</span>
-      </Html>
-    </Suspense>
+      {orbState === OrbState.FLOATING && (
+        <Html
+          occlude="blending"
+          position={textPosition}
+          style={{ pointerEvents: "none" }}
+          ref={behindRef}
+        >
+          <span id="text-behind-blur">HELLO</span>
+          <span id="text-behind">HELLO</span>
+        </Html>
+      )}
+    </group>
   );
 }

@@ -1,11 +1,14 @@
-import { Text } from "@react-three/drei";
+import { OrbitControls, Text } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import * as THREE from "three";
+import { Portal } from "./Portal";
+import { OrbScene } from "./Orb";
+import { OrbState } from "../types";
 
 const GOLDENRATIO = 1.61803398875;
 
-export function IntroductionScene() {
+function TextModel() {
   const texts = [
     "Hello!",
     "I'm Michael Shao,",
@@ -22,7 +25,7 @@ export function IntroductionScene() {
   const dropStartPosition = 4;
   const riseStartPosition = -4;
   const slideStartPositionX = 13;
-  const min = 0.007;
+  const min = 0.009;
   const max = 0.02;
   const lerpThreshold = 0.001;
 
@@ -63,7 +66,7 @@ export function IntroductionScene() {
         e.char.position.x = THREE.MathUtils.lerp(
           e.char.position.x,
           targetX,
-          0.012
+          e.lerpFactor
         );
         if (Math.abs(e.char.position.x - targetX) < lerpThreshold) {
           e.char.position.x = targetX;
@@ -96,7 +99,7 @@ export function IntroductionScene() {
             });
           }
         }}
-        font="fonts/roboto.ttf"
+        font="/fonts/roboto-mono.woff"
         position={[
           index * 0.3 - GOLDENRATIO * 3 + startPositionX,
           startPositionY,
@@ -131,6 +134,32 @@ export function IntroductionScene() {
         }
         return separate(text, animationRef, startPositionX, startPositionY);
       })}
+    </group>
+  );
+}
+
+export function IntroductionScene() {
+  const [orbState, setOrbState] = useState(OrbState.UNENTERED);
+  const position = new THREE.Vector3(GOLDENRATIO * 2.2, 0, -4);
+  const scale = new THREE.Vector3(4, 4, 4);
+  return (
+    <group>
+      <OrbitControls />
+      {orbState === OrbState.UNENTERED && <TextModel />}
+      <Portal
+        bg="#000000"
+        geometry={<icosahedronGeometry />}
+        position={position}
+        scale={scale}
+        onClick={() => {
+          setOrbState(OrbState.ENTERED);
+        }}
+        onFinish={() => {
+          setOrbState(OrbState.FLOATING);
+        }}
+      >
+        <OrbScene orbState={orbState} setOrbState={setOrbState} scale={0.05} />
+      </Portal>
     </group>
   );
 }
