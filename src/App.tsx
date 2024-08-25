@@ -5,7 +5,7 @@ export default function App() {
   
   return (
     <div style={{ height: "100vh" }}>
-      <Canvas dpr={[1, 2]}>
+      <Canvas>
         <IntroductionScene />
       </Canvas>
     </div>

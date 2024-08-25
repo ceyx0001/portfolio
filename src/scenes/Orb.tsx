@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { useFrame, useLoader, useThree } from "@react-three/fiber";
 import { extendMaterial, CustomMaterial } from "three-extend-material";
-import { Html, useGLTF } from "@react-three/drei";
+import { Text, useGLTF } from "@react-three/drei";
 import { useEffect, useRef, useState } from "react";
 //import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
@@ -58,7 +58,6 @@ function OrbModel({
     if (!meshRef.current || orbState === OrbState.DESTROYED) {
       return;
     }
-
     if (orbState !== OrbState.TRANSITIONING) {
       meshRef.current.rotation.y += 0.005;
       customMaterial.uniforms.uTime.value += 0.005;
@@ -193,58 +192,47 @@ export function OrbScene({
   [key: string]: unknown;
 }) {
   const textPosition = new THREE.Vector3(-3, 1, 0);
-  const frontRef = useRef<HTMLDivElement>(null);
-  const behindRef = useRef<HTMLDivElement>(null);
+  const frontZ = 2;
+  const behindZ = -2;
+  const texts = ["Projects", "Contact"];
 
   const handleClick = () => {
     if (orbState === OrbState.UNENTERED) {
       return;
     }
-    setOrbState(OrbState.TRANSITIONING);
-    if (behindRef.current !== null && frontRef.current !== null) {
-      for (const e of behindRef.current.children) {
-        e.classList.add("fade-out");
-      }
 
-      for (const e of frontRef.current.children) {
-        e.classList.add("fade-out");
-      }
-    }
+    setOrbState(OrbState.TRANSITIONING);
   };
 
   return (
     <group>
-      {orbState === OrbState.FLOATING && (
-        <Html
-          position={textPosition}
-          pointerEvents="none"
-          style={{ pointerEvents: "none" }}
-          ref={frontRef}
-        >
-          <span id="text-front">HELLO</span>
-        </Html>
-      )}
-
+      {orbState === OrbState.FLOATING &&
+        texts.map((text, index) => (
+          <Text
+            font="/fonts/roboto-mono.woff"
+            position={[0, 0.5 - index, frontZ]}
+            scale={0.4305}
+            color={"hotpink"}
+            material-opacity={0.5}
+            onClick={handleClick}
+          >
+            {text}
+          </Text>
+        ))}
       {orbState !== OrbState.DESTROYED && (
-        <OrbModel
-          orbState={orbState}
-          setOrbState={setOrbState}
-          onClick={handleClick}
-          {...props}
-        ></OrbModel>
+        <OrbModel orbState={orbState} setOrbState={setOrbState} {...props} />
       )}
-
-      {orbState === OrbState.FLOATING && (
-        <Html
-          occlude="blending"
-          position={textPosition}
-          style={{ pointerEvents: "none" }}
-          ref={behindRef}
-        >
-          <span id="text-behind-blur">HELLO</span>
-          <span id="text-behind">HELLO</span>
-        </Html>
-      )}
+      {orbState === OrbState.FLOATING &&
+        texts.map((text, index) => (
+          <Text
+            font="/fonts/roboto-mono.woff"
+            position={[0, (0.5 - index) * 2.33, behindZ]}
+            scale={1}
+            color={"green"}
+          >
+            {text}
+          </Text>
+        ))}
     </group>
   );
 }

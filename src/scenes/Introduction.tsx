@@ -9,11 +9,7 @@ import { OrbState } from "../types";
 const GOLDENRATIO = 1.61803398875;
 
 function TextModel() {
-  const texts = [
-    "Hello!",
-    "I'm Michael Shao,",
-    "a creative software developer.",
-  ];
+  const texts = ["Hello", "Michael Shao", "Software developer"];
   type CharInfo = {
     char: THREE.Object3D;
     lerpFactor: number;
@@ -28,6 +24,7 @@ function TextModel() {
   const min = 0.009;
   const max = 0.02;
   const lerpThreshold = 0.001;
+  const textPosition = new THREE.Vector3(-1, 0, 0);
 
   useFrame(() => {
     if (dropTextRefs.current) {
@@ -113,7 +110,7 @@ function TextModel() {
   }
 
   return (
-    <group position={[0, 0, 0]}>
+    <group position={textPosition}>
       {texts.map((text, index) => {
         let animationRef;
         let startPositionY;
@@ -140,15 +137,15 @@ function TextModel() {
 
 export function IntroductionScene() {
   const [orbState, setOrbState] = useState(OrbState.UNENTERED);
-  const position = new THREE.Vector3(GOLDENRATIO * 2.2, 0, -4);
+  const position = new THREE.Vector3(GOLDENRATIO * 3, 0, -4);
   const scale = new THREE.Vector3(4, 4, 4);
   return (
     <group>
       <OrbitControls />
       {orbState === OrbState.UNENTERED && <TextModel />}
       <Portal
-        bg="#000000"
-        geometry={<icosahedronGeometry />}
+        bg="#0c0f14"
+        geometry={<sphereGeometry />}
         position={position}
         scale={scale}
         onClick={() => {

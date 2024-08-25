@@ -14,7 +14,7 @@ export function Portal({
   onFinish,
   ...props
 }: {
-  bg: string;
+  bg?: string;
   geometry: JSX.Element;
   children: React.ReactNode;
   position: THREE.Vector3;
@@ -22,13 +22,10 @@ export function Portal({
   onFinish: () => void;
   [key: string]: unknown;
 }) {
-  const { camera } = useThree();
   const [mouseState, setMouseState] = useState(MouseStates.NEUTRAL);
   const meshRef = useRef<THREE.Mesh>(null);
   const portalRef = useRef(null);
-  const targetRef = useRef(new THREE.Vector3());
-  const frameRef = useRef(0);
-  const lerpThreshold = 0.5;
+  const {camera} = useThree();
 
   useEffect(() => {
     document.body.style.cursor =
@@ -36,33 +33,21 @@ export function Portal({
   }, [mouseState]);
 
   useFrame((_state, delta) => {
-    if (meshRef.current === null || portalRef.current === null) {
+    if (
+      meshRef.current === null ||
+      portalRef.current === null ||
+      mouseState === MouseStates.FINISHED
+    ) {
       return;
     }
-
     if (mouseState === MouseStates.CLICKED) {
-      const lookAtTarget = new THREE.Vector3().copy(position);
-      lookAtTarget.z += 10;
-      camera.position.lerp(lookAtTarget, 0.01);
-      if (camera.position.distanceTo(lookAtTarget) < lerpThreshold) {
-        const running = easing.damp(portalRef.current, "blend", 1, 0.2, delta);
-        if (!running) {
-          onFinish();
-        }
-        // have to lerp mesh rotation after to 0 y
+      const running = easing.damp(portalRef.current, "blend", 1, 0.5, delta);
+      if (!running) {
+        onFinish();
+        setMouseState(MouseStates.FINISHED);
       }
     } else {
-      if (frameRef.current % 50 === 0) {
-        targetRef.current.y += 0.2;
-      }
-
-      meshRef.current.rotation.y = THREE.MathUtils.lerp(
-        meshRef.current.rotation.y,
-        targetRef.current.y,
-        0.005
-      );
-
-      frameRef.current++;
+      meshRef.current.rotation.y += 0.005;
     }
   });
 
@@ -73,25 +58,40 @@ export function Portal({
       {...props}
       onPointerOver={(e) => {
         e.stopPropagation();
-        if (mouseState === MouseStates.CLICKED) {
+        if (
+          mouseState === MouseStates.CLICKED ||
+          mouseState === MouseStates.FINISHED
+        ) {
           return;
         }
         setMouseState(MouseStates.HOVERED);
       }}
       onPointerOut={() => {
-        if (mouseState === MouseStates.CLICKED) {
+        if (
+          mouseState === MouseStates.CLICKED ||
+          mouseState === MouseStates.FINISHED
+        ) {
           return;
         }
         setMouseState(MouseStates.NEUTRAL);
       }}
       onClick={(e) => {
+        if (
+          mouseState === MouseStates.CLICKED ||
+          mouseState === MouseStates.FINISHED
+        ) {
+          return;
+        }
         e.stopPropagation();
         onClick();
         setMouseState(MouseStates.CLICKED);
       }}
     >
       {geometry}
-      <MeshPortalMaterial ref={portalRef}>{children}</MeshPortalMaterial>
+      <MeshPortalMaterial ref={portalRef}>
+        {bg && <color attach="background" args={[bg]} />}
+        {children}
+      </MeshPortalMaterial>
       {mouseState === MouseStates.HOVERED && (
         <Outlines thickness={1} color="#fba56a" />
       )}

@@ -10,4 +10,5 @@ export const MouseStates = {
   HOVERED: "hovered",
   NEUTRAL: "neutral",
   CLICKED: "clicked",
+  FINISHED: "finished",
 };
