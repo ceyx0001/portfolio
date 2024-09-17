@@ -12,17 +12,19 @@ import { easing } from "maath";
 import { MouseStates } from "../types";
 
 type PortalProps = {
-  bg?: string;
   geometry: JSX.Element;
-  children: React.ReactNode;
   position: THREE.Vector3;
+  children: React.ReactNode;
   onClick: () => void;
   onFinish: () => void;
   [key: string]: unknown;
 };
 
 export const Portal = forwardRef<THREE.Mesh, PortalProps>(
-  ({ bg, geometry, children, position, onClick, onFinish, ...props }, outerMeshRef) => {
+  (
+    { geometry, position, children, onClick, onFinish, ...props },
+    outerMeshRef
+  ) => {
     const [mouseState, setMouseState] = useState(MouseStates.NEUTRAL);
     const innerMeshRef = useRef<THREE.Mesh>(null);
     const portalRef = useRef(null);
@@ -55,7 +57,7 @@ export const Portal = forwardRef<THREE.Mesh, PortalProps>(
           setMouseState(MouseStates.FINISHED);
         }
       } else {
-        innerMeshRef.current.rotation.y += 0.005;
+        //innerMeshRef.current.rotation.y += 0.005;
       }
     });
 
@@ -97,7 +99,6 @@ export const Portal = forwardRef<THREE.Mesh, PortalProps>(
       >
         {geometry}
         <MeshPortalMaterial ref={portalRef}>
-          {bg && <color attach="background" args={[bg]} />}
           {children}
         </MeshPortalMaterial>
         {mouseState === MouseStates.HOVERED && (

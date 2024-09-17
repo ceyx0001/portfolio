@@ -14,7 +14,6 @@ import { OrbState } from "../types";
 function OrbModel({
   orbState,
   setOrbState,
-  children,
   ...props
 }: {
   orbState: string;
@@ -49,6 +48,7 @@ function OrbModel({
   const { camera } = useThree();
   let duration = 0;
   const [hovered, setHovered] = useState(false);
+  const orbZ = -3
 
   useEffect(() => {
     document.body.style.cursor = hovered ? "pointer" : "auto";
@@ -63,7 +63,7 @@ function OrbModel({
       customMaterial.uniforms.uTime.value += 0.005;
       thetaRef.current += 0.0025;
       meshRef.current.position.x = Math.sin(thetaRef.current);
-      meshRef.current.position.z = Math.cos(thetaRef.current);
+      meshRef.current.position.z = Math.cos(thetaRef.current) + orbZ;
       meshRef.current.position.y = Math.cos(thetaRef.current - 1);
     } else {
       setHovered(false);
@@ -151,13 +151,11 @@ function OrbModel({
   geometry.setAttribute("aRand", new THREE.BufferAttribute(randoms, 1));
   geometry.setAttribute("aCenter", new THREE.BufferAttribute(centers, 3));
 
-  const scale = 0.2;
   return (
     <mesh
       ref={meshRef}
       geometry={geometry}
       material={customMaterial}
-      scale={[scale, scale, scale]}
       onPointerOver={(e) => {
         e.stopPropagation();
         if (
@@ -176,9 +174,7 @@ function OrbModel({
         }
       }}
       {...props}
-    >
-      {children}
-    </mesh>
+    />
   );
 }
 
@@ -191,10 +187,9 @@ export function OrbScene({
   setOrbState: React.Dispatch<React.SetStateAction<string>>;
   [key: string]: unknown;
 }) {
-  const textPosition = new THREE.Vector3(-3, 1, 0);
-  const frontZ = 2;
-  const behindZ = -2;
-  const texts = ["Projects", "Contact"];
+  const frontZ = -1.15;
+  const behindZ = -5.65;
+  const texts = ["About", "Projects"];
 
   const handleClick = () => {
     if (orbState === OrbState.UNENTERED) {
@@ -212,7 +207,7 @@ export function OrbScene({
             font="/fonts/roboto-mono.woff"
             position={[0, 0.5 - index, frontZ]}
             scale={0.4305}
-            color={"hotpink"}
+            color={"grey"}
             material-opacity={0.5}
             onClick={handleClick}
           >
@@ -220,7 +215,7 @@ export function OrbScene({
           </Text>
         ))}
       {orbState !== OrbState.DESTROYED && (
-        <OrbModel orbState={orbState} setOrbState={setOrbState} {...props} />
+        <OrbModel orbState={orbState} setOrbState={setOrbState} scale={0.09} {...props} />
       )}
       {orbState === OrbState.FLOATING &&
         texts.map((text, index) => (
@@ -228,7 +223,7 @@ export function OrbScene({
             font="/fonts/roboto-mono.woff"
             position={[0, (0.5 - index) * 2.33, behindZ]}
             scale={1}
-            color={"green"}
+            color={"red"}
           >
             {text}
           </Text>

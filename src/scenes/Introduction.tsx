@@ -1,11 +1,10 @@
-import { OrbitControls, Text } from "@react-three/drei";
+import { Text } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useRef, useState } from "react";
 import * as THREE from "three";
 import { Portal } from "./Portal";
 import { OrbScene } from "./Orb";
 import { OrbState } from "../types";
-import { easing } from "maath";
 
 const GOLDENRATIO = 1.61803398875;
 
@@ -83,6 +82,7 @@ function TextModel() {
     return Array.from(text).map((char, index) => (
       <Text
         key={index}
+        color={"gray"}
         ref={(e) => {
           if (e) {
             const material = new THREE.MeshBasicMaterial({
@@ -138,28 +138,25 @@ function TextModel() {
 
 export function IntroductionScene() {
   const [orbState, setOrbState] = useState(OrbState.UNENTERED);
-  const portalStartPosition = new THREE.Vector3(GOLDENRATIO * 3, 0, -4);
-  const scale = new THREE.Vector3(4, 4, 4);
+  const portalPosition = new THREE.Vector3(0, 0, -4);
+  const portalScale = new THREE.Vector3(4, 4, 4);
   const portalRef = useRef<THREE.Mesh>(null);
 
   useFrame(() => {
     if (!portalRef.current) {
       return;
     }
-
-    portalRef.current.position.set(0, 0, 0);
   });
 
   return (
     <group>
-      <OrbitControls />
       {orbState === OrbState.UNENTERED && <TextModel />}
       <Portal
         ref={portalRef}
         bg="#0c0f14"
         geometry={<sphereGeometry />}
-        position={portalStartPosition}
-        scale={scale}
+        scale={portalScale}
+        position={portalPosition}
         onClick={() => {
           setOrbState(OrbState.ENTERED);
         }}
@@ -167,15 +164,9 @@ export function IntroductionScene() {
           setOrbState(OrbState.FLOATING);
         }}
       >
-        <OrbScene orbState={orbState} setOrbState={setOrbState} scale={0.05} />
+        <color attach="background" args={["black"]} />
+        <OrbScene orbState={orbState} setOrbState={setOrbState} />
       </Portal>
     </group>
   );
-
-  /*return (
-    <group>
-      <OrbitControls />
-      <OrbScene orbState={orbState} setOrbState={setOrbState} scale={0.05} />
-    </group>
-  );*/
 }
