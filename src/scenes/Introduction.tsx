@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { Portal } from "./Portal";
 import { OrbScene } from "./Orb";
 import { OrbState } from "../types";
+import { easing } from "maath";
 
 const GOLDENRATIO = 1.61803398875;
 
@@ -137,16 +138,27 @@ function TextModel() {
 
 export function IntroductionScene() {
   const [orbState, setOrbState] = useState(OrbState.UNENTERED);
-  const position = new THREE.Vector3(GOLDENRATIO * 3, 0, -4);
+  const portalStartPosition = new THREE.Vector3(GOLDENRATIO * 3, 0, -4);
   const scale = new THREE.Vector3(4, 4, 4);
+  const portalRef = useRef<THREE.Mesh>(null);
+
+  useFrame(() => {
+    if (!portalRef.current) {
+      return;
+    }
+
+    portalRef.current.position.set(0, 0, 0);
+  });
+
   return (
     <group>
       <OrbitControls />
       {orbState === OrbState.UNENTERED && <TextModel />}
       <Portal
+        ref={portalRef}
         bg="#0c0f14"
         geometry={<sphereGeometry />}
-        position={position}
+        position={portalStartPosition}
         scale={scale}
         onClick={() => {
           setOrbState(OrbState.ENTERED);
@@ -159,4 +171,11 @@ export function IntroductionScene() {
       </Portal>
     </group>
   );
+
+  /*return (
+    <group>
+      <OrbitControls />
+      <OrbScene orbState={orbState} setOrbState={setOrbState} scale={0.05} />
+    </group>
+  );*/
 }
