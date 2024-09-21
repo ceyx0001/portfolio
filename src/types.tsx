@@ -12,3 +12,5 @@ export const MouseStates = {
   CLICKED: "clicked",
   FINISHED: "finished",
 };
+
+export const GOLDENRATIO = 1.61803398875;

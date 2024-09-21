@@ -1,9 +1,8 @@
 import * as THREE from "three";
 import { useFrame, useLoader, useThree } from "@react-three/fiber";
 import { extendMaterial, CustomMaterial } from "three-extend-material";
-import { Text, useGLTF } from "@react-three/drei";
+import { useGLTF } from "@react-three/drei";
 import { useEffect, useRef, useState } from "react";
-//import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 import vertexShaderHeader from "./glsl/shaderHeader.vert?raw";
 import vertexShaderVertex from "./glsl/shaderVertex.vert?raw";
@@ -11,7 +10,7 @@ import fragmentShaderHeader from "./glsl/shaderHeader.frag?raw";
 import fragmentShaderFragment from "./glsl/shaderVertex.frag?raw";
 import { OrbState } from "../types";
 
-function OrbModel({
+export function Orb({
   orbState,
   setOrbState,
   ...props
@@ -48,12 +47,14 @@ function OrbModel({
   const { camera } = useThree();
   let duration = 0;
   const [hovered, setHovered] = useState(false);
-  const orbZ = -3
+  const orbZ = -3;
 
   useEffect(() => {
     document.body.style.cursor = hovered ? "pointer" : "auto";
   }, [hovered]);
 
+  const targetPosition = new THREE.Vector3();
+  const direction = new THREE.Vector3();
   useFrame(() => {
     if (!meshRef.current || orbState === OrbState.DESTROYED) {
       return;
@@ -68,11 +69,9 @@ function OrbModel({
     } else {
       setHovered(false);
       const distance = 5;
-      const direction = new THREE.Vector3();
       camera.getWorldDirection(direction);
       direction.multiplyScalar(distance);
 
-      const targetPosition = new THREE.Vector3();
       targetPosition.copy(camera.position).add(direction);
 
       meshRef.current.quaternion.slerp(camera.quaternion, 0.01);
@@ -175,59 +174,5 @@ function OrbModel({
       }}
       {...props}
     />
-  );
-}
-
-export function OrbScene({
-  orbState,
-  setOrbState,
-  ...props
-}: {
-  orbState: string;
-  setOrbState: React.Dispatch<React.SetStateAction<string>>;
-  [key: string]: unknown;
-}) {
-  const frontZ = -1.15;
-  const behindZ = -5.65;
-  const texts = ["About", "Projects"];
-
-  const handleClick = () => {
-    if (orbState === OrbState.UNENTERED) {
-      return;
-    }
-
-    setOrbState(OrbState.TRANSITIONING);
-  };
-
-  return (
-    <group>
-      {orbState === OrbState.FLOATING &&
-        texts.map((text, index) => (
-          <Text
-            font="/fonts/roboto-mono.woff"
-            position={[0, 0.5 - index, frontZ]}
-            scale={0.4305}
-            color={"grey"}
-            material-opacity={0.5}
-            onClick={handleClick}
-          >
-            {text}
-          </Text>
-        ))}
-      {orbState !== OrbState.DESTROYED && (
-        <OrbModel orbState={orbState} setOrbState={setOrbState} scale={0.09} {...props} />
-      )}
-      {orbState === OrbState.FLOATING &&
-        texts.map((text, index) => (
-          <Text
-            font="/fonts/roboto-mono.woff"
-            position={[0, (0.5 - index) * 2.33, behindZ]}
-            scale={1}
-            color={"red"}
-          >
-            {text}
-          </Text>
-        ))}
-    </group>
   );
 }

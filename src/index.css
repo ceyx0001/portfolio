@@ -17,35 +17,14 @@ body {
   background-color: var(--background-color);
 }
 
-#text-behind,
-#text-front,
-#text-behind-blur {
-  font-family: "Roboto", sans-serif;
-  position: absolute;
-  text-align: center;
-  font-size: clamp(24px, 20vw, 200px);
-  text-transform: uppercase;
-  font-weight: 800;
-  letter-spacing: 10px;
-  line-height: 0.8;
+.about-body-text {
+  font-size: 2em;
+  color: white;
 }
 
-#text-behind {
-  color: var(--headline-color);
-}
-
-#text-behind-blur {
-  color: var(--headline-color);
-  filter: blur(8px);
-  -webkit-filter: blur(8px);
-}
-
-#text-front {
-  color: transparent;
-  -webkit-text-stroke: 2px var(--headline-color);
-}
-
-.fade-out {
-  opacity: 0;
-  transition: opacity 1s ease-out;
+.about-container {
+  display: flex;
+  flex-direction: column;
+  width: 50rem;
+  line-height: 4em;
 }
