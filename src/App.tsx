@@ -1,11 +1,11 @@
 import { Canvas } from "@react-three/fiber";
-import { Main } from "./scenes/Main";
+import { IntroductionScene } from "./scenes/Introduction";
 
 export default function App() {
   return (
     <div style={{ height: "100vh" }}>
       <Canvas>
-        <Main />
+        <IntroductionScene />
       </Canvas>
     </div>
   );

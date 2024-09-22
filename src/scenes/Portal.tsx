@@ -7,17 +7,16 @@ import {
 } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { MeshPortalMaterial, Outlines } from "@react-three/drei";
+import { MeshPortalMaterial, OrbitControls, Outlines } from "@react-three/drei";
 import { easing } from "maath";
 import { MouseStates } from "../types";
 
 type PortalProps = {
-  geometry?: JSX.Element;
-  position?: THREE.Vector3;
+  geometry: JSX.Element;
+  position: THREE.Vector3;
   children?: React.ReactNode;
   onClick: () => void;
   onFinish: () => void;
-  [key:string]: unknown;
 };
 
 export const Portal = forwardRef<THREE.Mesh, PortalProps>(
@@ -28,6 +27,8 @@ export const Portal = forwardRef<THREE.Mesh, PortalProps>(
     const [mouseState, setMouseState] = useState(MouseStates.NEUTRAL);
     const innerMeshRef = useRef<THREE.Mesh>(null);
     const portalRef = useRef(null);
+    const origin = new THREE.Vector3(0, 0, 0);
+
     useImperativeHandle(outerMeshRef, () => innerMeshRef.current!, []);
 
     useEffect(() => {
@@ -48,32 +49,15 @@ export const Portal = forwardRef<THREE.Mesh, PortalProps>(
           portalRef.current,
           "blend",
           1,
-          0.2,
+          0.3,
           delta
         );
 
+        easing.damp3(innerMeshRef.current.position, origin, 0.3, delta);
+
         if (!runningBlend && innerMeshRef.current.rotation.y === 0) {
-          (onFinish as ()=>void)();
+          onFinish();
           setMouseState(MouseStates.FINISHED);
-        }
-
-        if (innerMeshRef.current.rotation.y > Math.PI) {
-          innerMeshRef.current.rotation.y += 0.01;
-        } else {
-          innerMeshRef.current.rotation.y -= 0.01;
-        }
-
-        if (
-          innerMeshRef.current.rotation.y >= 2 * Math.PI ||
-          innerMeshRef.current.rotation.y < 0
-        ) {
-          innerMeshRef.current.rotation.y = 0;
-        }
-      } else {
-        if (innerMeshRef.current.rotation.y >= 2 * Math.PI) {
-          innerMeshRef.current.rotation.y = 0;
-        } else {
-          innerMeshRef.current.rotation.y += 0.005;
         }
       }
     });
@@ -81,7 +65,7 @@ export const Portal = forwardRef<THREE.Mesh, PortalProps>(
     return (
       <mesh
         ref={innerMeshRef}
-        position={position as THREE.Vector3}
+        position={position}
         {...props}
         onPointerOver={(e) => {
           e.stopPropagation();
@@ -110,12 +94,13 @@ export const Portal = forwardRef<THREE.Mesh, PortalProps>(
             return;
           }
           e.stopPropagation();
-          (onClick as ()=> void)();
+          onClick();
           setMouseState(MouseStates.CLICKED);
         }}
       >
-        {geometry as JSX.Element}
-        <MeshPortalMaterial ref={portalRef}>{children as React.ReactNode}</MeshPortalMaterial>
+        {geometry}
+        <OrbitControls />
+        <MeshPortalMaterial ref={portalRef}>{children}</MeshPortalMaterial>
         <Outlines
           visible={mouseState === MouseStates.HOVERED}
           thickness={1}

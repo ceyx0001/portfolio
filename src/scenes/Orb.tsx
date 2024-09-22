@@ -1,8 +1,8 @@
 import * as THREE from "three";
-import { useFrame, useLoader, useThree } from "@react-three/fiber";
+import { useFrame, useLoader } from "@react-three/fiber";
 import { extendMaterial, CustomMaterial } from "three-extend-material";
 import { useGLTF } from "@react-three/drei";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 import vertexShaderHeader from "./glsl/shaderHeader.vert?raw";
 import vertexShaderVertex from "./glsl/shaderVertex.vert?raw";
@@ -17,7 +17,6 @@ export function Orb({
 }: {
   orbState: string;
   setOrbState: React.Dispatch<React.SetStateAction<string>>;
-  children?: React.JSX.Element;
   [key: string]: unknown;
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
@@ -44,21 +43,16 @@ export function Orb({
       uReflectivity: { value: 0.5 },
     },
   });
-  const { camera } = useThree();
   let duration = 0;
-  const [hovered, setHovered] = useState(false);
   const orbZ = -3;
-
-  useEffect(() => {
-    document.body.style.cursor = hovered ? "pointer" : "auto";
-  }, [hovered]);
 
   const targetPosition = new THREE.Vector3();
   const direction = new THREE.Vector3();
-  useFrame(() => {
+  useFrame(({camera}) => {
     if (!meshRef.current || orbState === OrbState.DESTROYED) {
       return;
     }
+    
     if (orbState !== OrbState.TRANSITIONING) {
       meshRef.current.rotation.y += 0.005;
       customMaterial.uniforms.uTime.value += 0.005;
@@ -67,7 +61,6 @@ export function Orb({
       meshRef.current.position.z = Math.cos(thetaRef.current) + orbZ;
       meshRef.current.position.y = Math.cos(thetaRef.current - 1);
     } else {
-      setHovered(false);
       const distance = 5;
       camera.getWorldDirection(direction);
       direction.multiplyScalar(distance);
@@ -155,23 +148,6 @@ export function Orb({
       ref={meshRef}
       geometry={geometry}
       material={customMaterial}
-      onPointerOver={(e) => {
-        e.stopPropagation();
-        if (
-          orbState !== OrbState.TRANSITIONING &&
-          orbState !== OrbState.UNENTERED
-        ) {
-          setHovered(true);
-        }
-      }}
-      onPointerOut={() => {
-        if (
-          orbState !== OrbState.TRANSITIONING &&
-          orbState !== OrbState.UNENTERED
-        ) {
-          setHovered(false);
-        }
-      }}
       {...props}
     />
   );
