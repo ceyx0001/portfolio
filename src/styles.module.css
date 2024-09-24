@@ -1,0 +1,20 @@
+.trailsText {
+  position: relative;
+  height: 100%;
+  line-height: 3rem;
+  color: white;
+  will-change: transform, opacity;
+  overflow: hidden;
+}
+
+.trailsTextHeader {
+  width: 100%;
+  font-size: 4rem;
+  font-weight: 800;
+}
+
+.trailsTextBody {
+  width: 100%;
+  font-size: 2rem;
+  font-weight: 500;
+}

@@ -1,13 +1,13 @@
+import * as THREE from "three";
 import { Circle, Plane, Text, useFBO } from "@react-three/drei";
 import { OrbState } from "../types";
-import { Orb } from "./Orb";
+import { Orb } from "../components/Orb";
 import { useLocation } from "wouter";
-import * as THREE from "three";
 import { forwardRef, useRef } from "react";
 import { extend, GroupProps, useFrame, useThree } from "@react-three/fiber";
-import { useControls } from "leva";
 import { AboutScene } from "./About";
-import { TransitionMaterial } from "../TransitionMaterial";
+import { TransitionMaterial } from "../shaders/TransitionMaterial";
+import { easing } from "maath";
 extend({ TransitionMaterial });
 
 type MenuProps = {
@@ -17,19 +17,24 @@ type MenuProps = {
 
 export const Menu = forwardRef<THREE.Group, MenuProps>(
   ({ orbState, setOrbState, ...props }, ref) => {
+    const progression = { value: 0 };
     const frontZ = 0.42;
     const behindZ = -5.65;
     const buttons = [
       {
         text: "About",
         handler: () => {
+          if (location !== "/menu") {
+            return;
+          }
+
           setLocation("/about");
         },
       },
       {
         text: "Projects",
         handler: () => {
-          if (orbState === OrbState.UNENTERED) {
+          if (orbState === OrbState.UNENTERED || location !== "/menu") {
             return;
           }
           setLocation("/projects");
@@ -49,17 +54,9 @@ export const Menu = forwardRef<THREE.Group, MenuProps>(
 
     const viewport = useThree((state) => state.viewport);
 
-    const { progression } = useControls({
-      progression: {
-        value: 0,
-        min: 0,
-        max: 1,
-      },
-    });
-
     gl.compile(scene, camera);
 
-    useFrame(({ gl, camera }) => {
+    useFrame(({ gl, camera }, delta) => {
       if (
         !scene1Ref.current ||
         !scene2Ref.current ||
@@ -67,6 +64,12 @@ export const Menu = forwardRef<THREE.Group, MenuProps>(
         orbState === OrbState.UNENTERED
       ) {
         return;
+      }
+
+      if (location === "/about") {
+        easing.damp(progression, "value", 1, 0.5, delta);
+      } else {
+        easing.damp(progression, "value", 0, 0.5, delta);
       }
 
       scene1Ref.current.visible = true;
@@ -86,11 +89,12 @@ export const Menu = forwardRef<THREE.Group, MenuProps>(
         renderTarget1.texture;
       transitionMaterialRef.current.uniforms.uTex2.value =
         renderTarget2.texture;
-      transitionMaterialRef.current.uniforms.progression.value = progression;
+      transitionMaterialRef.current.uniforms.progression.value =
+        progression.value;
     });
 
     return (
-      <group ref={ref} visible={location === "/menu" || location === "/"}>
+      <group ref={ref} {...props}>
         <group ref={scene1Ref}>
           {buttons.map((button, index) => (
             <Text
@@ -99,7 +103,7 @@ export const Menu = forwardRef<THREE.Group, MenuProps>(
               font="/fonts/roboto-mono.woff"
               position={[0, 0.5 - index, frontZ]}
               scale={0.4305}
-              color={"grey"}
+              color={"green"}
               material-opacity={0.5}
               onClick={button.handler}
             >
@@ -107,11 +111,11 @@ export const Menu = forwardRef<THREE.Group, MenuProps>(
             </Text>
           ))}
           <Orb
-            visible={orbState !== OrbState.DESTROYED}
+            animate={true}
             orbState={orbState}
             setOrbState={setOrbState}
-            scale={0.09}
-            {...props}
+            scale={0.1}
+            visible={orbState !== OrbState.DESTROYED}
           />
           {buttons.map((button, index) => (
             <Text
@@ -125,10 +129,7 @@ export const Menu = forwardRef<THREE.Group, MenuProps>(
               {button.text}
             </Text>
           ))}
-          <Circle
-            args={[26, 20]}
-            position={[0, 0, -10]}
-          >
+          <Circle args={[26]} position={[0, 0, -10]}>
             <meshBasicMaterial color="black" />
           </Circle>
         </group>

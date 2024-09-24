@@ -16,15 +16,3 @@ body {
   height: 100%;
   background-color: var(--background-color);
 }
-
-.about-body-text {
-  font-size: 2em;
-  color: white;
-}
-
-.about-container {
-  display: flex;
-  flex-direction: column;
-  width: 50rem;
-  line-height: 4em;
-}

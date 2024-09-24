@@ -20,7 +20,7 @@ export function DriftingText({ ...props }) {
   const min = 0.009;
   const max = 0.02;
   const lerpThreshold = 0.001;
-  const textPosition = new THREE.Vector3(-1, 0, 0);
+  const textPosition = new THREE.Vector3(0, 0, 1);
 
   useFrame(() => {
     if (dropTextRefs.current) {

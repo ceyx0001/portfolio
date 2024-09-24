@@ -5,19 +5,19 @@ import {
   useState,
   forwardRef,
 } from "react";
-import { useFrame } from "@react-three/fiber";
+import { MeshProps, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { MeshPortalMaterial, OrbitControls, Outlines } from "@react-three/drei";
+import { MeshPortalMaterial, Outlines } from "@react-three/drei";
 import { easing } from "maath";
 import { MouseStates } from "../types";
 
 type PortalProps = {
-  geometry: JSX.Element;
+  geometry: THREE.BufferGeometry;
   position: THREE.Vector3;
   children?: React.ReactNode;
   onClick: () => void;
   onFinish: () => void;
-};
+} & MeshProps;
 
 export const Portal = forwardRef<THREE.Mesh, PortalProps>(
   (
@@ -65,6 +65,7 @@ export const Portal = forwardRef<THREE.Mesh, PortalProps>(
     return (
       <mesh
         ref={innerMeshRef}
+        geometry={geometry}
         position={position}
         {...props}
         onPointerOver={(e) => {
@@ -98,8 +99,6 @@ export const Portal = forwardRef<THREE.Mesh, PortalProps>(
           setMouseState(MouseStates.CLICKED);
         }}
       >
-        {geometry}
-        <OrbitControls />
         <MeshPortalMaterial ref={portalRef}>{children}</MeshPortalMaterial>
         <Outlines
           visible={mouseState === MouseStates.HOVERED}
