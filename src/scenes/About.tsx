@@ -3,24 +3,28 @@ import * as THREE from "three";
 import React, {
   Children,
   forwardRef,
+  MouseEvent,
   useEffect,
   useRef,
   useState,
 } from "react";
 import {
-  applyProps,
   GroupProps,
-  MeshProps,
+  PrimitiveProps,
+  ThreeEvent,
   useThree,
 } from "@react-three/fiber";
 import { useLocation } from "wouter";
 import { Html } from "@react-three/drei";
 import { a, useTrail } from "@react-spring/web";
 import { GOLDENRATIO } from "../types";
-import { Physics, RigidBody } from "@react-three/rapier";
+import {
+  CuboidCollider,
+  Physics,
+  RapierRigidBody,
+  RigidBody,
+} from "@react-three/rapier";
 import { ConvexObjectBreaker } from "three-stdlib";
-
-const breaker = new ConvexObjectBreaker();
 
 export const Trail: React.FC<{
   active: boolean;
@@ -46,52 +50,51 @@ export const Trail: React.FC<{
   );
 };
 
-type BreakProps = {
-  shard: boolean;
-  scale: number;
-  position: THREE.Vector3 | number[];
-  quarternion: THREE.Quaternion;
-} & THREE.Mesh;
+const breaker = new ConvexObjectBreaker();
 
-const Break = ({ mesh, ...props }: { mesh: BreakProps }) => {
-  const api = useRef(null);
+const Break = ({
+  object,
+  ...props
+}: { object: THREE.Mesh } & PrimitiveProps) => {
+  const rbRef = useRef<RapierRigidBody>(null);
   useEffect(() => {
-    if (!api.current) {
+    if (!rbRef.current) {
       return;
     }
 
     // Make the original shape a breakable object
-    if (!mesh.shard)
+    if (!object.userData.shard) {
       breaker.prepareBreakableObject(
-        mesh,
+        object,
         0,
         new THREE.Vector3(),
         new THREE.Vector3(),
         true
       );
-    api.current.setLinvel(
+    }
+
+    rbRef.current.setLinvel(
       {
-        x: THREE.MathUtils.randFloatSpread(20),
-        y: 20,
-        z: THREE.MathUtils.randFloatSpread(20),
+        x: THREE.MathUtils.randFloatSpread(5),
+        y: THREE.MathUtils.randFloatSpread(5),
+        z: THREE.MathUtils.randFloatSpread(5),
       },
       true
     );
-    api.current.setAngvel(
+    rbRef.current.setAngvel(
       { x: Math.random(), y: Math.random(), z: Math.random() },
       true
     );
-    mesh.api = api.current;
-  }, []);
+  }, [object]);
   return (
     <RigidBody
       restitution={0.1}
       friction={0.25}
-      ref={api}
-      type={!mesh.shard ? "fixed" : "dynamic"}
+      ref={rbRef}
+      type={!object.userData.shard ? "fixed" : "dynamic"}
       colliders="hull"
     >
-      <primitive castShadow receiveShadow object={mesh} {...props}>
+      <primitive castShadow receiveShadow object={object} {...props}>
         <meshBasicMaterial color={"hotpink"} />
       </primitive>
     </RigidBody>
@@ -102,65 +105,107 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>((_, ref) => {
   const [location] = useLocation();
   const [active, setActive] = useState(false);
   const { camera } = useThree();
-  const [meshes, setMeshes] = useState<THREE.Mesh[]>(() => [
-    new THREE.Mesh(new THREE.SphereGeometry(30)),
+  const [meshes, setMeshes] = useState<THREE.Mesh[]>([
+    new THREE.Mesh(new THREE.BoxGeometry(30, 30, 30)),
   ]);
 
   useEffect(() => {
     location === "/about" ? setActive(true) : setActive(false);
   }, [location]);
 
+
+  /*
+
+CAUSED BY THE CAMERA BEING TOO CLOSE SO IT SETS TO ORIGIN BREAK POINT
+
+  */
   return (
     <group ref={ref}>
-      <Physics debug gravity={[0, -100, 0]}>
-        {meshes.map((mesh) => (
-          <Break
-            key={mesh.uuid}
-            mesh={mesh}
-            onClick={(e) => {
-              e.stopPropagation();
-              // Calculate shards
-              const pieces = breaker.subdivideByImpact(
-                mesh,
-                e.point.clone(),
-                camera
-                  .getWorldPosition(new THREE.Vector3())
-                  .sub(e.point.clone())
-                  .normalize(),
-                1,
-                1
-              );
-              if (meshes.length < 30 && pieces.length > 1) {
-                const newMeshes = [
-                  ...meshes.filter((m) => m.userData !== mesh.userData),
-                  ...pieces.map((piece) => {
-                    return applyProps(piece, {
-                      shard: true,
-                      scale: mesh.scale,
-                      position: mesh.getWorldPosition(new THREE.Vector3()),
-                      quaternion: mesh.getWorldQuaternion(
-                        new THREE.Quaternion()
-                      ),
-                    });
-                  }),
-                ] as THREE.Mesh[];
-                setMeshes(newMeshes);
-              } else {
-                // If more than 30 shards just make them jump instead of breaking them again
-                mesh.api.setLinvel({ x: 2, y: 2, z: 2 }, true);
-                mesh.api.setAngvel(
-                  { x: Math.random(), y: Math.random(), z: Math.random() },
-                  true
+      {active && (
+        <Physics debug gravity={[0, 0, 0]}>
+          {meshes.map((mesh) => (
+            <Break
+              key={mesh.uuid}
+              object={mesh}
+              scale={0.1}
+              onClick={(e: ThreeEvent<MouseEvent>) => {
+                e.stopPropagation();
+                // Calculate shards
+                const pieces = breaker.subdivideByImpact(
+                  mesh,
+                  e.point.clone(),
+                  camera
+                    .getWorldPosition(new THREE.Vector3())
+                    .sub(e.point.clone())
+                    .normalize(),
+                  0.5,
+                  0.5
                 );
-              }
-            }}
-          />
-        ))}
-      </Physics>
+                if (pieces.length > 1) {
+                  setMeshes([
+                    ...meshes.filter((m) => m.userData !== mesh.userData),
+                    ...pieces.map((piece) => {
+                      piece.position.copy(
+                        mesh.getWorldPosition(new THREE.Vector3())
+                      );
+                      piece.quaternion.copy(
+                        mesh.getWorldQuaternion(new THREE.Quaternion())
+                      );
+                      piece.userData.shard = true;
+                      piece.scale.copy(mesh.scale);
+
+                      return piece;
+                    }),
+                  ] as THREE.Mesh[]);
+                }
+              }}
+            />
+          ))}
+
+          <group rotation={[0, 0, 0]}>
+            <CuboidCollider
+              restitution={0.1}
+              friction={0.25}
+              position={[30, 0, 0]}
+              args={[1, 20, 30]}
+            />
+            <CuboidCollider
+              restitution={0.1}
+              friction={0.25}
+              position={[-30, 0, 0]}
+              args={[1, 20, 30]}
+            />
+            <CuboidCollider
+              restitution={0.1}
+              friction={0.25}
+              position={[0, 0, -30]}
+              args={[30, 20, 1]}
+            />
+            <CuboidCollider
+              restitution={0.1}
+              friction={0.25}
+              position={[0, 0, 30]}
+              args={[30, 20, 1]}
+            />
+            <CuboidCollider
+              restitution={0.1}
+              friction={0.25}
+              position={[0, -21, 0]}
+              args={[30, 1, 30]}
+            />
+            <CuboidCollider
+              restitution={0.1}
+              friction={0.25}
+              position={[0, 20, 0]}
+              args={[30, 1, 30]}
+            />
+          </group>
+        </Physics>
+      )}
 
       <Html
         position={[-GOLDENRATIO * 3, GOLDENRATIO, 0]}
-        style={{ width: "40rem" }}
+        style={{ width: "40rem", pointerEvents: "none" }}
       >
         <Trail active={active}>
           <span className={`${css.trailsTextHeader} ${css.trailsText}`}>
