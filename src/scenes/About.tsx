@@ -19,6 +19,7 @@ import { Html } from "@react-three/drei";
 import { a, useTrail } from "@react-spring/web";
 import { GOLDENRATIO } from "../types";
 import {
+  CuboidArgs,
   CuboidCollider,
   Physics,
   RapierRigidBody,
@@ -75,21 +76,18 @@ const Break = ({
 
     rbRef.current.setLinvel(
       {
-        x: THREE.MathUtils.randFloatSpread(5),
-        y: THREE.MathUtils.randFloatSpread(5),
-        z: THREE.MathUtils.randFloatSpread(5),
+        x: THREE.MathUtils.randFloatSpread(20),
+        y: THREE.MathUtils.randFloatSpread(20),
+        z: THREE.MathUtils.randFloatSpread(20),
       },
       true
     );
-    rbRef.current.setAngvel(
-      { x: Math.random(), y: Math.random(), z: Math.random() },
-      true
-    );
+    
   }, [object]);
+
   return (
     <RigidBody
       restitution={0.1}
-      friction={0.25}
       ref={rbRef}
       type={!object.userData.shard ? "fixed" : "dynamic"}
       colliders="hull"
@@ -113,12 +111,39 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>((_, ref) => {
     location === "/about" ? setActive(true) : setActive(false);
   }, [location]);
 
+  const xSize = 10;
+  const ySize = 7;
+  const zOffset = -3;
 
-  /*
+  const panels: {
+    [key: string]: { args: CuboidArgs; position: THREE.Vector3 };
+  } = {
+    right: {
+      args: [0.1, ySize, 5],
+      position: new THREE.Vector3(xSize, 0, zOffset),
+    },
+    left: {
+      args: [0.1, ySize, 5],
+      position: new THREE.Vector3(-xSize, 0, zOffset),
+    },
+    back: {
+      args: [xSize, ySize, 0.1],
+      position: new THREE.Vector3(0, 0, -5 + zOffset),
+    },
+    front: {
+      args: [xSize, ySize, 0.1],
+      position: new THREE.Vector3(0, 0, 5 + zOffset),
+    },
+    bottom: {
+      args: [xSize, 0.1, 5],
+      position: new THREE.Vector3(0, -ySize, zOffset),
+    },
+    top: {
+      args: [xSize, 0.1, 5],
+      position: new THREE.Vector3(0, ySize, zOffset),
+    },
+  };
 
-CAUSED BY THE CAMERA BEING TOO CLOSE SO IT SETS TO ORIGIN BREAK POINT
-
-  */
   return (
     <group ref={ref}>
       {active && (
@@ -138,8 +163,8 @@ CAUSED BY THE CAMERA BEING TOO CLOSE SO IT SETS TO ORIGIN BREAK POINT
                     .getWorldPosition(new THREE.Vector3())
                     .sub(e.point.clone())
                     .normalize(),
-                  0.5,
-                  0.5
+                  0.1,
+                  0.1
                 );
                 if (pieces.length > 1) {
                   setMeshes([
@@ -163,45 +188,20 @@ CAUSED BY THE CAMERA BEING TOO CLOSE SO IT SETS TO ORIGIN BREAK POINT
           ))}
 
           <group rotation={[0, 0, 0]}>
-            <CuboidCollider
-              restitution={0.1}
-              friction={0.25}
-              position={[30, 0, 0]}
-              args={[1, 20, 30]}
-            />
-            <CuboidCollider
-              restitution={0.1}
-              friction={0.25}
-              position={[-30, 0, 0]}
-              args={[1, 20, 30]}
-            />
-            <CuboidCollider
-              restitution={0.1}
-              friction={0.25}
-              position={[0, 0, -30]}
-              args={[30, 20, 1]}
-            />
-            <CuboidCollider
-              restitution={0.1}
-              friction={0.25}
-              position={[0, 0, 30]}
-              args={[30, 20, 1]}
-            />
-            <CuboidCollider
-              restitution={0.1}
-              friction={0.25}
-              position={[0, -21, 0]}
-              args={[30, 1, 30]}
-            />
-            <CuboidCollider
-              restitution={0.1}
-              friction={0.25}
-              position={[0, 20, 0]}
-              args={[30, 1, 30]}
-            />
+            {Object.keys(panels).map((side) => {
+              return (
+                <CuboidCollider
+                  restitution={0.1}
+                  position={panels[side].position}
+                  args={panels[side].args}
+                />
+              );
+            })}
           </group>
         </Physics>
       )}
+
+      <ambientLight intensity={10} />
 
       <Html
         position={[-GOLDENRATIO * 3, GOLDENRATIO, 0]}
@@ -212,13 +212,12 @@ CAUSED BY THE CAMERA BEING TOO CLOSE SO IT SETS TO ORIGIN BREAK POINT
             About Myself
           </span>
           <span className={`${css.trailsTextBody} ${css.trailsText}`}>
-            A passionate web developer with a knack for creating unique
+            I am a passionate web developer with a knack for creating unique
             experiences. With a strong foundation in both front-end and back-end
             development, I'm ready to bring your ideas to life
           </span>
         </Trail>
       </Html>
-      <ambientLight intensity={10} />
     </group>
   );
 });
