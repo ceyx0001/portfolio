@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { MeshProps, useFrame, useLoader } from "@react-three/fiber";
 import { extendMaterial, CustomMaterial } from "three-extend-material";
 import { useGLTF } from "@react-three/drei";
-import { forwardRef, useImperativeHandle, useRef } from "react";
+import { forwardRef, useImperativeHandle, useMemo, useRef } from "react";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 import { OrbState } from "../types";
 
@@ -14,24 +14,12 @@ type OrbProps = {
   transitionDist?: number;
 } & MeshProps;
 
-export const Orb = forwardRef<THREE.Mesh, OrbProps>(
-  (
-    {
-      animate = false,
-      orbState,
-      setOrbState,
-      position = new THREE.Vector3(0, 0, 0),
-      transitionDist = 3,
-      ...props
-    },
-    outerMeshRef
-  ) => {
-    const thetaRef = useRef(0);
-    const innerMeshRef = useRef<THREE.Mesh>(null);
-    useImperativeHandle(outerMeshRef, () => innerMeshRef.current!, []);
-    const hdr = useLoader(RGBELoader, "/assets/gradient.hdr");
-    hdr.mapping = THREE.EquirectangularReflectionMapping;
-    const customMaterial = extendMaterial(new THREE.MeshStandardMaterial(), {
+export const OrbMaterial = () => {
+  const hdr = useLoader(RGBELoader, "/assets/gradient.hdr");
+  hdr.mapping = THREE.EquirectangularReflectionMapping;
+
+  const orbMaterial = useMemo(() => {
+    return extendMaterial(new THREE.MeshStandardMaterial(), {
       class: CustomMaterial,
       vertexHeader: /*glsl*/ `
       attribute float aRand; 
@@ -128,11 +116,34 @@ export const Orb = forwardRef<THREE.Mesh, OrbProps>(
         uReflectivity: { value: 0.5 },
       },
     });
+  }, [hdr]);
+
+  return orbMaterial;
+};
+
+export const Orb = forwardRef<THREE.Mesh, OrbProps>(
+  (
+    {
+      animate = false,
+      orbState,
+      setOrbState,
+      position = new THREE.Vector3(0, 0, 0),
+      transitionDist = 3,
+      ...props
+    },
+    outerMeshRef
+  ) => {
+    const thetaRef = useRef(0);
+    const innerMeshRef = useRef<THREE.Mesh>(null);
+    const { scene: orb } = useGLTF("/assets/orb.glb");
+    useImperativeHandle(outerMeshRef, () => innerMeshRef.current!, []);
     let duration = 0;
     const orbZ = -3;
-
     const targetPosition = new THREE.Vector3();
     const direction = new THREE.Vector3();
+    const orbMaterial = OrbMaterial();
+
+
     useFrame(({ camera }) => {
       if (
         !innerMeshRef.current ||
@@ -144,7 +155,7 @@ export const Orb = forwardRef<THREE.Mesh, OrbProps>(
 
       if (orbState !== OrbState.TRANSITIONING) {
         innerMeshRef.current.rotation.y += 0.005;
-        customMaterial.uniforms.uTime.value += 0.005;
+        orbMaterial.uniforms.uTime.value += 0.005;
         thetaRef.current += 0.0025;
         innerMeshRef.current.position.x =
           position.x + Math.sin(thetaRef.current);
@@ -164,8 +175,8 @@ export const Orb = forwardRef<THREE.Mesh, OrbProps>(
         duration += 1;
 
         if (duration > 180) {
-          if (customMaterial.uniforms.uProgress.value < 2) {
-            customMaterial.uniforms.uProgress.value += 0.005;
+          if (orbMaterial.uniforms.uProgress.value < 2) {
+            orbMaterial.uniforms.uProgress.value += 0.005;
           } else {
             setOrbState(OrbState.DESTROYED);
           }
@@ -173,7 +184,6 @@ export const Orb = forwardRef<THREE.Mesh, OrbProps>(
       }
     });
 
-    const { scene: orb } = useGLTF("/assets/orb.glb");
     let mesh: THREE.Mesh | undefined;
     orb.traverse((child) => {
       if (child instanceof THREE.Mesh) {
@@ -238,7 +248,7 @@ export const Orb = forwardRef<THREE.Mesh, OrbProps>(
       <mesh
         ref={innerMeshRef}
         geometry={geometry}
-        material={customMaterial}
+        material={orbMaterial}
         position={position}
         {...props}
       />

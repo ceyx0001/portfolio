@@ -17,7 +17,7 @@ type MenuProps = {
 
 export const Menu = forwardRef<THREE.Group, MenuProps>(
   ({ orbState, setOrbState, ...props }, ref) => {
-    const progression = { value: 0 };
+    const progressionRef = useRef({ value: 0 });
     const frontZ = 0.42;
     const behindZ = -5.65;
     const buttons = [
@@ -67,9 +67,9 @@ export const Menu = forwardRef<THREE.Group, MenuProps>(
       }
 
       if (location === "/about") {
-        easing.damp(progression, "value", 1, 0.5, delta);
+        easing.damp(progressionRef.current, "value", 1, 0.2, delta);
       } else {
-        easing.damp(progression, "value", 0, 0.5, delta);
+        easing.damp(progressionRef.current, "value", 0, 0.2, delta);
       }
 
       scene1Ref.current.visible = true;
@@ -90,7 +90,7 @@ export const Menu = forwardRef<THREE.Group, MenuProps>(
       transitionMaterialRef.current.uniforms.uTex2.value =
         renderTarget2.texture;
       transitionMaterialRef.current.uniforms.progression.value =
-        progression.value;
+        progressionRef.current.value;
     });
 
     return (
