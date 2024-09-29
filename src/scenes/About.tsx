@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
 import { GroupProps, PrimitiveProps, useFrame } from "@react-three/fiber";
 import { useLocation } from "wouter";
-import { Html, useGLTF, Text, Outlines } from "@react-three/drei";
+import { Html, useGLTF } from "@react-three/drei";
 import { GOLDENRATIO } from "../types";
 import {
   CuboidArgs,
