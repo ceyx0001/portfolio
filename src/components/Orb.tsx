@@ -15,7 +15,7 @@ type OrbProps = {
 } & MeshProps;
 
 export const OrbMaterial = () => {
-  const hdr = useLoader(RGBELoader, "/assets/gradient.hdr");
+  const hdr = useLoader(RGBELoader, "/models/gradient.hdr");
   hdr.mapping = THREE.EquirectangularReflectionMapping;
 
   const orbMaterial = useMemo(() => {
@@ -135,14 +135,13 @@ export const Orb = forwardRef<THREE.Mesh, OrbProps>(
   ) => {
     const thetaRef = useRef(0);
     const innerMeshRef = useRef<THREE.Mesh>(null);
-    const { scene: orb } = useGLTF("/assets/orb.glb");
+    const { scene: orb } = useGLTF("/models/orb.glb");
     useImperativeHandle(outerMeshRef, () => innerMeshRef.current!, []);
     let duration = 0;
     const orbZ = -3;
     const targetPosition = new THREE.Vector3();
     const direction = new THREE.Vector3();
     const orbMaterial = OrbMaterial();
-
 
     useFrame(({ camera }) => {
       if (
@@ -255,3 +254,5 @@ export const Orb = forwardRef<THREE.Mesh, OrbProps>(
     );
   }
 );
+
+useGLTF.preload("/models/orb.glb");

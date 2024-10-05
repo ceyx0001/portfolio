@@ -1,9 +1,9 @@
 import { GroupProps, useFrame } from "@react-three/fiber";
 import { forwardRef, useMemo, useRef, useState } from "react";
-import { Portal } from "../components/Portal";
+import { Portal } from "../components/effects/Portal";
 import { Menu } from "./Menu";
 import { OrbState } from "../types";
-import { DriftingText } from "../components/DriftingText";
+import { DriftingText } from "../components/effects/DriftingText";
 import { useLocation } from "wouter";
 import * as THREE from "three";
 

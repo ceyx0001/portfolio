@@ -6,7 +6,7 @@ export default function App() {
   return (
     <div style={{ height: "100vh" }}>
       <Canvas>
-        <IntroductionScene />
+        <AboutScene />
       </Canvas>
     </div>
   );

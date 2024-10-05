@@ -1,279 +1,215 @@
 import css from "../styles.module.css";
 import * as THREE from "three";
-import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
-import { GroupProps, PrimitiveProps, useFrame } from "@react-three/fiber";
+import { forwardRef, useRef, useState } from "react";
+import { GroupProps, useThree } from "@react-three/fiber";
 import { useLocation } from "wouter";
-import { Html, useGLTF } from "@react-three/drei";
+import {
+  Box,
+  Center,
+  ContactShadows,
+  Environment,
+  Html,
+  Instance,
+  Instances,
+  Lightformer,
+  OrbitControls,
+  useTexture,
+} from "@react-three/drei";
 import { GOLDENRATIO } from "../types";
 import {
-  CuboidArgs,
-  CuboidCollider,
+  CollisionEnterHandler,
+  CollisionEnterPayload,
   Physics,
-  RapierRigidBody,
   RigidBody,
 } from "@react-three/rapier";
 import { ConvexObjectBreaker } from "three-stdlib";
-import { OrbMaterial } from "../components/Orb";
-import { lerp } from "three/src/math/MathUtils.js";
-import { Trail } from "../components/Trail";
-import { Pointer } from "../components/Pointer";
+import { Trail } from "../components/effects/Trail";
+import { Break } from "../components/effects/Break";
+import { Shoot } from "../components/effects/Shoot";
+import { CollisionBox } from "../components/CollisionBox";
+import { DecalBall } from "../components/DecalBall";
+import { Misc } from "../components/Misc";
 
 const breaker = new ConvexObjectBreaker();
 
-const Break = ({
-  object,
-  rbPosition,
-  rbScale,
-  ...props
-}: {
-  object: THREE.Mesh;
-  rbPosition?: THREE.Vector3;
-  rbScale?: number;
-} & PrimitiveProps) => {
-  const rbRef = useRef<RapierRigidBody>(null);
-  useEffect(() => {
-    if (!rbRef.current) {
-      return;
-    }
-
-    // Make the original shape a breakable object
-    if (!object.userData.shard) {
-      breaker.prepareBreakableObject(
-        object,
-        0,
-        new THREE.Vector3(),
-        new THREE.Vector3(),
-        true
-      );
-    }
-
-    rbRef.current.setLinvel(
-      {
-        x: THREE.MathUtils.randFloatSpread(20),
-        y: THREE.MathUtils.randFloatSpread(20),
-        z: THREE.MathUtils.randFloatSpread(20),
-      },
-      true
-    );
-  }, [object]);
-
-  return (
-    <RigidBody
-      ref={rbRef}
-      type={!object.userData.shard ? "fixed" : "dynamic"}
-      colliders={"hull"}
-      position={rbPosition}
-      scale={rbScale}
-    >
-      <primitive object={object} {...props} />
-    </RigidBody>
-  );
-};
-
 export const AboutScene = forwardRef<THREE.Group, GroupProps>((_, ref) => {
-  const orbMaterial = OrbMaterial();
-  const { scene: orbBroken } = useGLTF("/assets/orbBroken.glb");
-  const { scene: orb } = useGLTF("/assets/orb.glb");
   const [location] = useLocation();
-  const [meshes, setMeshes] = useState<THREE.Mesh[]>([]);
-  const [activate, setActivate] = useState(false);
-  const [sceneActive, setSceneActive] = useState(false);
-  const orbRef = useRef<THREE.Mesh>(null);
+  const [animate, setAnimate] = useState(false);
+  const decals = useTexture([
+    "/icons/c.png",
+    "/icons/css3.png",
+    "/icons/git.png",
+    "/icons/html5.png",
+    "/icons/java.png",
+    "/icons/javascript.png",
+    "/icons/mongodb.png",
+    "/icons/mysql.png",
+    "/icons/postgresql.png",
+    "/icons/python.png",
+    "/icons/react.png",
+    "/icons/tailwind.png",
+    "/icons/three.png",
+    "/icons/typescript.png",
+  ]);
 
-  const text = useMemo(() => {
-    return {
-      headers: ["About Myself", "My Journey"],
-      bodies: [
-        "I am a passionate web developer with a knack for creating unique user experiences. With a strong foundation in both front-end and back-end development, I'm ready to bring your ideas to life",
-        "I began programming in 2018, starting with a curiosity for how cool things like games and stunning websites were made. This curiosity evolved into a deep-seated love for programming and app development. Since then, I’ve honed my skills and learned many valuable concepts.",
-      ],
-    };
-  }, []);
+  const tableWidth = 9;
+  const tableLength = 6;
+
+  const epoxyMaterial = new THREE.MeshPhysicalMaterial({
+    transmission: 1,
+    roughness: 0,
+    thickness: 3.5,
+    ior: 1.2,
+    anisotropy: 0.1,
+    clearcoat: 1,
+    attenuationDistance: 0.5,
+    attenuationColor: "#ffffff",
+  });
+
+  const front = new THREE.Mesh(new THREE.BoxGeometry(tableWidth, 0.05, 3));
+  const back = new THREE.Mesh(new THREE.BoxGeometry(tableWidth, 0.05, 3));
+  const left = new THREE.Mesh(new THREE.BoxGeometry(3, 0.05, tableLength));
+  const right = new THREE.Mesh(new THREE.BoxGeometry(3, 0.05, tableLength));
+  const top = new THREE.Mesh(
+    new THREE.BoxGeometry(tableWidth, 0.05, tableLength)
+  );
+
+  const glassCase: {
+    position: { [key: number]: number[] };
+    rotation: { [key: number]: number[] };
+  } = {
+    position: {
+      0: [0, -1, 0.5],
+      1: [0, -1, -5.5],
+      2: [4.5, -1, -2.5],
+      3: [-4.5, -1, -2.5],
+      4: [0, 0.45, -2.5],
+    },
+    rotation: {
+      0: [Math.PI / 2, 0, 0],
+      1: [Math.PI / 2, 0, 0],
+      2: [0, 0, Math.PI / 2],
+      3: [0, 0, Math.PI / 2],
+      4: [0, 0, 0],
+    },
+  };
+
+  const [meshes, setMeshes] = useState<THREE.Mesh[]>(() => [
+    front,
+    back,
+    left,
+    right,
+    top,
+  ]);
+
+  const text = {
+    headers: ["About Myself", "My Journey"],
+    bodies: [
+      "I am a passionate web developer with a knack for creating interactive user experiences. With a strong foundation in both front-end and back-end development, I'm ready to bring your ideas to life",
+      "I began programming in 2018, starting with a curiosity for how cool things like games and stunning websites were made. This curiosity evolved into a deep-seated love for programming and app development. Since then, I’ve honed my skills and learned many valuable concepts.",
+    ],
+  };
 
   const headerRef = useRef(text.headers[0]);
   const bodyRef = useRef(text.bodies[0]);
 
-  useEffect(() => {
-    const foundMeshes: THREE.Mesh[] = [];
-    orbBroken.traverse((child) => {
-      if (child instanceof THREE.Mesh) {
-        child.material = orbMaterial;
-        foundMeshes.push(child);
-      }
-    });
+  const { camera } = useThree();
 
-    orb.traverse((child) => {
-      if (child instanceof THREE.Mesh) {
-        child.material = orbMaterial;
-      }
-    });
-
-    setMeshes(foundMeshes);
-  }, [orb, orbBroken, orbMaterial]);
-
-  useEffect(() => {
-    if (location === "/about") {
-      setSceneActive(true);
-      if (orbRef.current) {
-        orbRef.current.rotation.y = 10;
-      }
-    } else {
-      setSceneActive(false);
-      setTimeout(() => {
-        headerRef.current = text.headers[0];
-        bodyRef.current = text.bodies[0];
-        setActivate(false);
-      }, 500);
-    }
-
-    if (activate) {
-      meshes.forEach((mesh) => {
-        const pieces = breaker.subdivideByImpact(
-          mesh,
-          new THREE.Vector3(),
-          new THREE.Vector3(),
-          0,
-          0
-        );
-        if (pieces.length > 1 && meshes.length < 24) {
-          setMeshes(
-            (prevMeshes) =>
-              [
-                ...prevMeshes.filter((m) => m.userData !== mesh.userData),
-                ...pieces.map((piece) => {
-                  piece.position.copy(
-                    mesh.getWorldPosition(new THREE.Vector3())
-                  );
-                  piece.quaternion.copy(
-                    mesh.getWorldQuaternion(new THREE.Quaternion())
-                  );
-                  piece.userData.shard = true;
-                  piece.scale.copy(mesh.scale);
-                  return piece;
-                }),
-              ] as THREE.Mesh[]
-          );
-        }
-      });
-    }
-  }, [location, activate, meshes, setSceneActive, text]);
-
-  useFrame(({ clock }) => {
-    if (!orbRef.current) {
+  const collisionHandler: CollisionEnterHandler = (
+    payload: CollisionEnterPayload
+  ) => {
+    if (meshes.length > 2) {
       return;
     }
 
-    orbRef.current.position.y = lerp(
-      orbRef.current.position.y,
-      Math.sin(clock.elapsedTime) / 2,
-      0.9
-    );
+    const { x, y, z } = payload.manifold.solverContactPoint(0);
+    const poi = new THREE.Vector3(x, y, z);
+    const normal = camera
+      .getWorldPosition(new THREE.Vector3())
+      .sub(poi.clone())
+      .normalize();
 
-    if (orbRef.current.rotation.y < 0.1) {
-      orbRef.current.rotation.y -= 0.001;
-    } else {
-      orbRef.current.rotation.y = lerp(orbRef.current.rotation.y, 0, 0.01);
-    }
-  });
-
-  const xSize = 10;
-  const ySize = 5;
-  const zSize = 1.8;
-  const zOffset = 0;
-  const orbPosition = new THREE.Vector3(1.75 * GOLDENRATIO, 0, 0);
-  const orbScale = 0.15;
-
-  const panels: {
-    [key: string]: { args: CuboidArgs; position: THREE.Vector3 };
-  } = {
-    right: {
-      args: [0.1, ySize, zSize],
-      position: new THREE.Vector3(xSize, 0, zOffset),
-    },
-    left: {
-      args: [0.1, ySize, zSize],
-      position: new THREE.Vector3(-xSize, 0, zOffset),
-    },
-    back: {
-      args: [xSize, ySize, 0.1],
-      position: new THREE.Vector3(0, 0, -zSize + zOffset),
-    },
-    front: {
-      args: [xSize, ySize, 0.1],
-      position: new THREE.Vector3(0, 0, zSize + zOffset),
-    },
-    bottom: {
-      args: [xSize, 0.1, zSize],
-      position: new THREE.Vector3(0, -ySize, zOffset),
-    },
-    top: {
-      args: [xSize, 0.1, zSize],
-      position: new THREE.Vector3(0, ySize, zOffset),
-    },
+    meshes.forEach((mesh) => {
+      const pieces = breaker.subdivideByImpact(mesh, poi, normal, 1, 5);
+      if (pieces.length > 1) {
+        setMeshes(
+          (prevMeshes) =>
+            [
+              ...prevMeshes.filter((m) => m.userData !== mesh.userData),
+              ...pieces.map((piece) => {
+                piece.position.add(mesh.position.clone().sub(poi));
+                piece.quaternion.copy(mesh.quaternion);
+                piece.userData.shard = true;
+                piece.scale.copy(mesh.scale);
+                return piece;
+              }),
+            ] as THREE.Mesh[]
+        );
+      }
+    });
   };
+
+  const ballsStartPosition = new THREE.Vector3(-5, 0, 0);
 
   return (
     <group ref={ref}>
-      <Physics gravity={[0, 0, 0]}>
-        <Pointer />
-        {activate &&
-          meshes.map((mesh) => (
-            <Break
-              key={mesh.uuid}
-              object={mesh}
-              rbPosition={orbPosition}
-              rbScale={orbScale}
-              activate={activate}
-            />
-          ))}
+      <Physics debug gravity={[0, 0, 0]}>
+        {meshes.map((mesh, i: number) => (
+          <Break
+            key={"break-mesh-front-" + i}
+            object={mesh}
+            onCollisionEnter={collisionHandler}
+            material={epoxyMaterial}
+            rotation={mesh.userData.shard ? null : glassCase.rotation[`${i}`]}
+            position={mesh.userData.shard ? null : glassCase.position[`${i}`]}
+          />
+        ))}
 
-        <group rotation={[0, 0, 0]}>
-          {Object.keys(panels).map((side) => {
+        <Instances limit={decals.length} range={decals.length}>
+          <sphereGeometry args={[0]} />
+          <meshBasicMaterial />
+          {decals.map((decal, i) => {
             return (
-              <CuboidCollider
-                key={side + "cuboidcollider"}
-                position={panels[side].position}
-                args={panels[side].args}
-                restitution={0.3}
-              />
+              <Shoot
+                key={"shooting-ball-" + i}
+                startPosition={ballsStartPosition}
+                activate={animate}
+                delay={i * 100}
+              >
+                <Instance>
+                  <DecalBall decal={decal} />
+                </Instance>
+              </Shoot>
             );
           })}
-        </group>
+        </Instances>
+
+        <Misc scale={0.2} position={[0, -2, 0]} />
+
+        <CollisionBox xSize={10} ySize={6} zSize={7} />
+
+        {/*table*/}
+        <RigidBody type={"fixed"}>
+          <Box args={[tableWidth, 0.1, tableLength]} position={[0, -2.5, -2.5]}>
+            <meshStandardMaterial />
+          </Box>
+        </RigidBody>
       </Physics>
 
-      <primitive
-        ref={orbRef}
-        object={orb}
-        visible={!activate}
-        position={orbPosition}
-        scale={orbScale}
-        onClick={() => {
-          if (!sceneActive) {
-            return;
-          }
-          headerRef.current = text.headers[1];
-          bodyRef.current = text.bodies[1];
-          setActivate(true);
-          setSceneActive(false);
-        }}
-      >
-        <Html position={[-4,15,0]} style={{ width: "12rem" }}>
-          {!activate && (
-            <Trail active={sceneActive} delay={500}>
-              <span className={`${css.trailsTextBody} ${css.trailsText}`}>
-                Click the orb!
-              </span>
-            </Trail>
-          )}
-        </Html>
-      </primitive>
+      <ContactShadows
+        smooth={false}
+        scale={100}
+        position={[0, -2.4, 0]}
+        blur={0.5}
+        opacity={0.75}
+      />
 
       <Html
         position={[-GOLDENRATIO * 3, GOLDENRATIO, 0]}
         style={{ width: "40rem", pointerEvents: "none" }}
       >
-        {sceneActive && (
-          <Trail active={sceneActive} delay={500}>
+        {location === "/about" && (
+          <Trail active={location === "/about"} delay={500}>
             <span className={`${css.trailsTextHeader} ${css.trailsText}`}>
               {headerRef.current}
             </span>
@@ -283,6 +219,75 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>((_, ref) => {
           </Trail>
         )}
       </Html>
+
+      <Environment resolution={512}>
+        {/* Ceiling */}
+        <Lightformer
+          intensity={2}
+          rotation-x={Math.PI / 2}
+          position={[0, 4, -9]}
+          scale={[10, 1, 1]}
+        />
+        <Lightformer
+          intensity={2}
+          rotation-x={Math.PI / 2}
+          position={[0, 4, -6]}
+          scale={[10, 1, 1]}
+        />
+        <Lightformer
+          intensity={2}
+          rotation-x={Math.PI / 2}
+          position={[0, 4, -3]}
+          scale={[10, 1, 1]}
+        />
+        <Lightformer
+          intensity={2}
+          rotation-x={Math.PI / 2}
+          position={[0, 4, 0]}
+          scale={[10, 1, 1]}
+        />
+        <Lightformer
+          intensity={2}
+          rotation-x={Math.PI / 2}
+          position={[0, 4, 3]}
+          scale={[10, 1, 1]}
+        />
+        <Lightformer
+          intensity={2}
+          rotation-x={Math.PI / 2}
+          position={[0, 4, 6]}
+          scale={[10, 1, 1]}
+        />
+        <Lightformer
+          intensity={2}
+          rotation-x={Math.PI / 2}
+          position={[0, 4, 9]}
+          scale={[10, 1, 1]}
+        />
+        {/* Sides */}
+        <Lightformer
+          intensity={2}
+          rotation-y={Math.PI / 2}
+          position={[-50, 2, 0]}
+          scale={[100, 2, 1]}
+        />
+        <Lightformer
+          intensity={2}
+          rotation-y={-Math.PI / 2}
+          position={[50, 2, 0]}
+          scale={[100, 2, 1]}
+        />
+        {/* Key */}
+        <Lightformer
+          form="ring"
+          color="red"
+          intensity={10}
+          scale={2}
+          position={[10, 5, 10]}
+          onUpdate={(self) => self.lookAt(0, 0, 0)}
+        />
+      </Environment>
+      <OrbitControls makeDefault />
     </group>
   );
 });
