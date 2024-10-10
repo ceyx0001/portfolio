@@ -1,5 +1,5 @@
 import { Decal, Sphere } from "@react-three/drei";
-import { MeshPhysicalMaterial, Texture } from "three";
+import { Material, Texture } from "three";
 
 export const DecalBall = ({
   scale = 1,
@@ -7,17 +7,16 @@ export const DecalBall = ({
   decal,
 }: {
   scale?: number;
-  material?: MeshPhysicalMaterial;
+  material?: Material;
   decal: Texture;
 }) => {
   return (
     <Sphere args={[scale, 32, 32]} material={material}>
-      <meshBasicMaterial color="black" />
       <Decal
         depthTest={true}
         position={[0, 0, scale]}
         rotation={[0, 0, 0]}
-        scale={1.5}
+        scale={1.25}
         map={decal}
       />
     </Sphere>

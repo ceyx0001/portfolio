@@ -7,6 +7,7 @@ export const CollisionBox = ({
   zSize = 5,
   zOffset = 0,
   thickness = 1,
+  ...props
 }) => {
   const panels: {
     [key: string]: { args: CuboidArgs; position: Vector3 };
@@ -38,7 +39,7 @@ export const CollisionBox = ({
   };
 
   return (
-    <group rotation={[0, 0, 0]}>
+    <group rotation={[0, 0, 0]} {...props}>
       {Object.keys(panels).map((side) => {
         return (
           <CuboidCollider

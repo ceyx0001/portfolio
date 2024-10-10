@@ -22,7 +22,7 @@ export const Pointer = ({ vec = new Vector3(), size = [0.5, 0.5] }) => {
       colliders={false}
       ref={pointerRef}
     >
-      <CuboidCollider args={[size[0], size[1], 2]} />
+      <CuboidCollider args={[size[0], size[1], size[2]]} />
     </RigidBody>
   );
 };

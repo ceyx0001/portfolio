@@ -5,8 +5,8 @@ import { AboutScene } from "./scenes/About";
 export default function App() {
   return (
     <div style={{ height: "100vh" }}>
-      <Canvas>
-        <AboutScene />
+      <Canvas shadows>
+        <IntroductionScene />
       </Canvas>
     </div>
   );

@@ -7,12 +7,14 @@ export const Shoot = ({
   startPosition,
   rbScale = 0.3,
   delay = 0,
+  direction = new THREE.Vector3(0, 0, 0),
   children,
 }: {
   activate: boolean;
   startPosition: THREE.Vector3;
   rbScale?: number;
   delay?: number;
+  direction: THREE.Vector3;
   children: ReactNode;
 }) => {
   const rbRef = useRef<RapierRigidBody>(null);
@@ -30,9 +32,9 @@ export const Shoot = ({
 
       rbRef.current.setLinvel(
         {
-          x: 40,
-          y: Math.random() * 5,
-          z: 0,
+          x: direction.x,
+          y: direction.y,
+          z: direction.z,
         },
         true
       );
@@ -46,7 +48,7 @@ export const Shoot = ({
       );
     }, delay);
     return () => clearTimeout(timer);
-  }, [activate, delay]);
+  }, [activate, delay, direction.x, direction.y, direction.z]);
 
   return (
     <RigidBody

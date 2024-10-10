@@ -24,6 +24,8 @@ export const Misc = ({ ...props }) => {
         rotation={[2.4, 0, 0]}
       >
         <mesh
+          castShadow
+          receiveShadow
           geometry={(leafNode.leaf001_leaf_0 as THREE.Mesh).geometry}
           material={leafMat["leaf"]}
           scale={0.3}
@@ -41,7 +43,7 @@ export const Misc = ({ ...props }) => {
         />
       </RigidBody>
 
-      <RigidBody colliders={"hull"} position={[9.8, -1, -16]}>
+      <RigidBody colliders={"hull"} position={[9.8, 0, -16]} scale={1.5}>
         <group rotation={[-Math.PI / 2, 1, 0]}>
           <mesh
             castShadow
