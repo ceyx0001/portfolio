@@ -96,15 +96,12 @@ export function Band({
   useEffect(() => {
     if (hovered) {
       document.body.style.cursor = dragged ? "grabbing" : "grab";
+      if (dragged) {
+        onPull();
+      }
       return () => void (document.body.style.cursor = "auto");
     }
-  }, [hovered, dragged]);
-
-  useEffect(() => {
-    if (dragged) {
-      onPull();
-    }
-  }, [dragged, onPull]);
+  }, [hovered, dragged, onPull]);
 
   useFrame((state, delta) => {
     if (

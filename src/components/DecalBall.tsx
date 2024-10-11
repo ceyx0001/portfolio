@@ -3,10 +3,12 @@ import { Material, Texture } from "three";
 
 export const DecalBall = ({
   scale = 1,
+  decalScale = 1,
   material,
   decal,
 }: {
   scale?: number;
+  decalScale?: number;
   material?: Material;
   decal: Texture;
 }) => {
@@ -16,7 +18,7 @@ export const DecalBall = ({
         depthTest={true}
         position={[0, 0, scale]}
         rotation={[0, 0, 0]}
-        scale={1.25}
+        scale={decalScale}
         map={decal}
       />
     </Sphere>

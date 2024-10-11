@@ -6,6 +6,7 @@ import { OrbState } from "../types";
 import { DriftingText } from "../components/effects/DriftingText";
 import { useLocation } from "wouter";
 import * as THREE from "three";
+import { Transition } from "../components/effects/Transition";
 
 export const IntroductionScene = forwardRef<THREE.Group, GroupProps>(
   (_, ref) => {
@@ -30,7 +31,6 @@ export const IntroductionScene = forwardRef<THREE.Group, GroupProps>(
           onClick={() => {
             setOrbState(OrbState.ENTERED);
             setLocation("/menu");
-
           }}
           onFinish={() => {
             setOrbState(OrbState.FLOATING);

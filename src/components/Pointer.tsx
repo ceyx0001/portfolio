@@ -4,7 +4,11 @@ import { useRef } from "react";
 import { RigidBody } from "@react-three/rapier";
 import { Vector3 } from "three";
 
-export const Pointer = ({ vec = new Vector3(), size = [0.5, 0.5] }) => {
+export const Pointer = ({
+  vec = new Vector3(),
+  size = [0.5, 0.5],
+  activate = true,
+}) => {
   const pointerRef = useRef<RapierRigidBody>(null);
   useFrame(({ pointer, viewport }) => {
     pointerRef.current?.setNextKinematicTranslation(
@@ -18,7 +22,7 @@ export const Pointer = ({ vec = new Vector3(), size = [0.5, 0.5] }) => {
   return (
     <RigidBody
       position={[0, 0, 0]}
-      type="kinematicPosition"
+      type={activate ? "kinematicPosition" : undefined}
       colliders={false}
       ref={pointerRef}
     >
