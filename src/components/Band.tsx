@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { extend, useFrame, Object3DNode } from "@react-three/fiber";
 import {
   Box,
@@ -47,13 +47,21 @@ type BandProps = {
 export function Band({
   maxSpeed = 20,
   minSpeed = 10,
-  position = new THREE.Vector3(0, 0, 0),
+  position = [0, 0, 0] as unknown as THREE.Vector3,
   onPull = () => {},
 }: BandProps) {
   const repositionX = position.x > 0 ? -position.x : position.x;
   const repositionY = position.x > 0 ? -position.y : position.y;
   const repositionZ = position.x > 0 ? -position.z : position.z;
-  const reposition = new THREE.Vector3(repositionX, repositionY, repositionZ);
+  const { reposition, vec, ang, rot, dir } = useMemo(() => {
+    return {
+      reposition: new THREE.Vector3(repositionX, repositionY, repositionZ),
+      vec: new THREE.Vector3(),
+      ang: new THREE.Vector3(),
+      rot: new THREE.Vector3(),
+      dir: new THREE.Vector3(),
+    };
+  }, [repositionX, repositionY, repositionZ]);
 
   const band = useRef<THREE.Mesh>(null),
     fixed = useRef<CustomRigidBody>(null),
@@ -62,10 +70,6 @@ export function Band({
     j3 = useRef<CustomRigidBody>(null),
     body = useRef<CustomRigidBody>(null),
     text = useRef<THREE.Mesh>(null);
-  const vec = new THREE.Vector3(),
-    ang = new THREE.Vector3(),
-    rot = new THREE.Vector3(),
-    dir = new THREE.Vector3();
   const segmentProps = {
     type: "dynamic" as RigidBodyTypeString,
     canSleep: true,
@@ -93,9 +97,9 @@ export function Band({
   ]);
 
   useEffect(() => {
-      if (dragged) {
-        onPull();
-      }
+    if (dragged) {
+      onPull();
+    }
   }, [dragged, onPull]);
 
   useFrame((state, delta) => {
@@ -109,6 +113,8 @@ export function Band({
     ) {
       return;
     }
+
+    console.log("test");
 
     text.current.position.x = Math.sin(state.clock.elapsedTime) * 2;
 
@@ -129,18 +135,23 @@ export function Band({
         if (!ref.current) {
           return;
         }
-        if (!ref.current.lerped)
+        if (!ref.current.lerped) {
           ref.current.lerped = new THREE.Vector3().copy(
             ref.current.translation()
           );
-        const clampedDistance = Math.max(
-          0.1,
-          Math.min(1, ref.current.lerped.distanceTo(ref.current.translation()))
-        );
-        ref.current.lerped.lerp(
-          ref.current.translation(),
-          delta * (minSpeed + clampedDistance * (maxSpeed - minSpeed))
-        );
+        } else {
+          const clampedDistance = Math.max(
+            0.1,
+            Math.min(
+              1,
+              ref.current.lerped.distanceTo(ref.current.translation())
+            )
+          );
+          ref.current.lerped.lerp(
+            ref.current.translation(),
+            delta * (minSpeed + clampedDistance * (maxSpeed - minSpeed))
+          );
+        }
       });
 
       // Calculate catmul curve

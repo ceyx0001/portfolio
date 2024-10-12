@@ -4,8 +4,10 @@ import * as THREE from "three";
 import { Ramen } from "./myself/Ramen";
 import { Headphones } from "./myself/Headphones";
 import { FilmReel } from "./myself/FilmReel";
+import { GroupProps } from "@react-three/fiber";
+import { useEffect } from "react";
 
-export const Misc = ({ ...props }) => {
+export const Misc = ({ reset, ...props }: { reset: boolean } & GroupProps) => {
   const { nodes: leafNode, materials: leafMat } = useGLTF("/models/leaf.glb");
   const { nodes: pokeballNode, materials: pokeballMat } = useGLTF(
     "/models/pokeball.glb"
@@ -15,6 +17,10 @@ export const Misc = ({ ...props }) => {
   const { nodes: volleyNode, materials: volleyMat } = useGLTF(
     "/models/volleyball.glb"
   );
+
+  useEffect(() => {
+    
+  }, [reset]);
 
   return (
     <group {...props}>

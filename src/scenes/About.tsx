@@ -24,7 +24,7 @@ import {
   PerspectiveCamera,
 } from "@react-three/drei";
 import { GOLDENRATIO } from "../types";
-import { Physics, RigidBody } from "@react-three/rapier";
+import { Physics, RapierRigidBody, RigidBody } from "@react-three/rapier";
 import { ConvexObjectBreaker } from "three-stdlib";
 import { Trail } from "../components/effects/Trail";
 import { Break } from "../components/effects/Break";
@@ -131,11 +131,16 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
       };
     }, []);
 
-    const shootPosition = useMemo(() => {
-      return new THREE.Vector3(0, 6, 0);
-    }, []);
-    const shootDirection = useMemo(() => {
-      return new THREE.Vector3(randFloatSpread(10), -40, randFloatSpread(10));
+    const { shootPosition, shootDirection, bandPosition } = useMemo(() => {
+      return {
+        shootPosition: new THREE.Vector3(0, 6, 0),
+        shootDirection: new THREE.Vector3(
+          randFloatSpread(10),
+          -40,
+          randFloatSpread(10)
+        ),
+        bandPosition: new THREE.Vector3(GOLDENRATIO * 2, 1, GOLDENRATIO * 3),
+      };
     }, []);
 
     const [location] = useLocation();
@@ -161,19 +166,26 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
 
     const headerRef = useRef(text.headers[0]);
     const bodyRef = useRef(text.bodies[0]);
-    const decalBallsRef = useRef<THREE.Mesh[]>();
+    const ballsRBRef = useRef<RapierRigidBody[]>([]);
 
     const { camera } = useThree();
 
+    // reset scene upon location change
     useEffect(() => {
       headerRef.current = text.headers[0];
       bodyRef.current = text.bodies[0];
       if (location !== "/about") {
         setTimeout(() => {
           setMeshes(defaultGlass);
-        }, 1000);
+          setAnimate(false);
+
+          ballsRBRef.current.forEach((e) => {
+            e.setTranslation(shootPosition, true);
+            e.setBodyType(1, true);
+          });
+        }, 500);
       }
-    }, [defaultGlass, location, text]);
+    }, [defaultGlass, location, shootPosition, text]);
 
     return (
       <group ref={ref} {...props}>
@@ -257,6 +269,12 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
                 delay={i * 100}
                 direction={shootDirection}
                 rbScale={0.5}
+                ref={(e: RapierRigidBody) => {
+                  if (!e) {
+                    return;
+                  }
+                  ballsRBRef.current.push(e);
+                }}
               >
                 <DecalBall
                   decal={decal}
@@ -268,7 +286,13 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
             );
           })}
 
-          <Misc castShadow receiveShadow scale={0.2} position={[0, -2, 0]} />
+          <Misc
+            castShadow
+            receiveShadow
+            scale={0.2}
+            position={[0, -2, 0]}
+            reset={location !== "/about"}
+          />
 
           <CollisionBox
             xSize={collisionBoxSize.x}
@@ -322,7 +346,7 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
           </RigidBody>
 
           <Band
-            position={new THREE.Vector3(GOLDENRATIO * 2, 1, GOLDENRATIO * 3)}
+            position={bandPosition}
             onPull={() => {
               if (location !== "/about" || animate) {
                 return;

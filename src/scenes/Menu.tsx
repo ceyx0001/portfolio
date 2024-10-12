@@ -8,7 +8,7 @@ import {
 import { OrbState } from "../types";
 import { Orb } from "../components/Orb";
 import { useLocation } from "wouter";
-import { forwardRef, useEffect, useMemo, useRef } from "react";
+import { forwardRef, useEffect, useMemo } from "react";
 import { extend, GroupProps, useThree } from "@react-three/fiber";
 import { AboutScene } from "./About";
 import { TransitionMaterial } from "../shaders/TransitionMaterial";
@@ -22,8 +22,8 @@ type MenuProps = {
 
 export const Menu = forwardRef<THREE.Group, MenuProps>(
   ({ orbState, setOrbState, ...props }, ref) => {
-    const frontZ = -0.5;
-    const behindZ = -6;
+    const frontZ = -0.1;
+    const behindZ = -5.2;
 
     const [location, setLocation] = useLocation();
     const viewport = useThree((state) => state.viewport);
