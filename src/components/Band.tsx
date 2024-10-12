@@ -83,7 +83,6 @@ export function Band({
       ])
   );
   const [dragged, drag] = useState<THREE.Vector3 | boolean>(false);
-  const [hovered, hover] = useState(false);
 
   useRopeJoint(fixed, j1, [[0, 0, 0], [0, 0, 0], 1]);
   useRopeJoint(j1, j2, [[0, 0, 0], [0, 0, 0], 1]);
@@ -94,14 +93,10 @@ export function Band({
   ]);
 
   useEffect(() => {
-    if (hovered) {
-      document.body.style.cursor = dragged ? "grabbing" : "grab";
       if (dragged) {
         onPull();
       }
-      return () => void (document.body.style.cursor = "auto");
-    }
-  }, [hovered, dragged, onPull]);
+  }, [dragged, onPull]);
 
   useFrame((state, delta) => {
     if (
@@ -192,8 +187,6 @@ export function Band({
           collisionGroups={interactionGroups([])}
         >
           <group
-            onPointerOver={() => hover(true)}
-            onPointerOut={() => hover(false)}
             onPointerUp={(e) => {
               e.stopPropagation();
               (e.target as HTMLElement)!.releasePointerCapture(e.pointerId),

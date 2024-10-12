@@ -139,8 +139,12 @@ export const Orb = forwardRef<THREE.Mesh, OrbProps>(
     useImperativeHandle(outerMeshRef, () => innerMeshRef.current!, []);
     let duration = 0;
     const orbZ = -3;
-    const targetPosition = new THREE.Vector3();
-    const direction = new THREE.Vector3();
+    const targetPosition = useMemo(() => {
+      return new THREE.Vector3();
+    }, []);
+    const direction = useMemo(() => {
+      return new THREE.Vector3();
+    }, []);
     const orbMaterial = OrbMaterial();
 
     useFrame(({ camera }) => {

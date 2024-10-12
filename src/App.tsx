@@ -5,7 +5,10 @@ import { AboutScene } from "./scenes/About";
 export default function App() {
   return (
     <div style={{ height: "100vh" }}>
-      <Canvas shadows>
+      <Canvas
+        shadows
+        onCreated={(state) => (state.gl.localClippingEnabled = true)}
+      >
         <IntroductionScene />
       </Canvas>
     </div>

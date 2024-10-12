@@ -1,7 +1,6 @@
 import * as THREE from "three";
 import {
   Circle,
-  OrbitControls,
   PerspectiveCamera,
   RenderTexture,
   Text,
@@ -9,15 +8,12 @@ import {
 import { OrbState } from "../types";
 import { Orb } from "../components/Orb";
 import { useLocation } from "wouter";
-import { forwardRef, useEffect, useRef } from "react";
+import { forwardRef, useEffect, useMemo, useRef } from "react";
 import { extend, GroupProps, useThree } from "@react-three/fiber";
 import { AboutScene } from "./About";
 import { TransitionMaterial } from "../shaders/TransitionMaterial";
-import { a, useSpring } from "@react-spring/three";
+import { useSpring } from "@react-spring/three";
 extend({ TransitionMaterial });
-
-const frontZ = -0.25;
-const behindZ = -6;
 
 type MenuProps = {
   orbState: string;
@@ -26,22 +22,32 @@ type MenuProps = {
 
 export const Menu = forwardRef<THREE.Group, MenuProps>(
   ({ orbState, setOrbState, ...props }, ref) => {
+    const frontZ = -0.5;
+    const behindZ = -6;
+
     const [location, setLocation] = useLocation();
     const viewport = useThree((state) => state.viewport);
-    const menuRef = useRef<THREE.Mesh>(null);
-    const [animation, api] = useSpring(() => ({
-      scaleY: 1,
-      config: { tension: 220, friction: 120 },
+    const [, api] = useSpring(() => ({
+      clippingConstant: 0,
+      config: { tension: 400, friction: 100 },
+      onChange: ({ value }) => {
+        clippingPlane.constant = value.clippingConstant;
+      },
     }));
+
+    const clippingPlane = useMemo(() => {
+      const plane = new THREE.Plane();
+      plane.normal.set(0, -5, 0);
+      return plane;
+    }, []);
 
     useEffect(() => {
       if (location === "/about") {
-        api.start({ scaleY: 1 });
+        api.start({ clippingConstant: 1 });
       } else {
-        api.start({ scaleY: 0 });
+        api.start({ clippingConstant: -1 });
       }
-      console.log(animation.scaleY);
-    }, [api, location, animation.scaleY]);
+    }, [api, location, viewport.height]);
 
     const buttons = [
       {
@@ -68,7 +74,7 @@ export const Menu = forwardRef<THREE.Group, MenuProps>(
 
     return (
       <group ref={ref} {...props}>
-        <group position={[0,0,-0.5]}>
+        <group>
           {buttons.map((button, index) => (
             <Text
               visible={orbState === OrbState.FLOATING}
@@ -87,7 +93,7 @@ export const Menu = forwardRef<THREE.Group, MenuProps>(
             animate={true}
             orbState={orbState}
             setOrbState={setOrbState}
-            scale={0.1}
+            scale={0.2}
             visible={orbState !== OrbState.DESTROYED}
           />
           {buttons.map((button, index) => (
@@ -107,9 +113,10 @@ export const Menu = forwardRef<THREE.Group, MenuProps>(
           </Circle>
         </group>
 
-        <a.mesh ref={menuRef} scale-y={animation.scaleY}>
+        
+        <mesh>
           <planeGeometry args={[viewport.width, viewport.height]} />
-          <meshBasicMaterial>
+          <meshBasicMaterial clippingPlanes={[clippingPlane]} clipShadows={true}>
             <RenderTexture attach={"map"}>
               <AboutScene />
               <PerspectiveCamera
@@ -119,9 +126,7 @@ export const Menu = forwardRef<THREE.Group, MenuProps>(
               />
             </RenderTexture>
           </meshBasicMaterial>
-        </a.mesh>
-
-        <OrbitControls/>
+        </mesh>
       </group>
     );
   }

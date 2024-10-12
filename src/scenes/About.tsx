@@ -1,6 +1,13 @@
 import css from "../styles.module.css";
 import * as THREE from "three";
-import { forwardRef, useRef, useState } from "react";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   applyProps,
   GroupProps,
@@ -32,89 +39,105 @@ import { Pointer } from "../components/Pointer";
 
 const breaker = new ConvexObjectBreaker();
 
-const tableWidth = 9;
-const tableLength = 6;
-
-const epoxyMaterial = new THREE.MeshPhysicalMaterial({
-  transmission: 1,
-  roughness: 0.35,
-  thickness: 4,
-  ior: 1.05,
-  anisotropy: 1,
-  clearcoat: 1,
-  attenuationDistance: 1,
-  attenuationColor: "white",
-  color: "white",
-});
-
-const decalBallMaterial = new THREE.MeshStandardMaterial({ color: "navy" });
-
-const collisionBoxSize = {
-  x: 10,
-  y: 7,
-  z: 7,
-};
-
-const glassCase: {
-  position: {
-    [key: string]: [number, number, number];
-  };
-  rotation: {
-    [key: string]: [number, number, number];
-  };
-  mesh: {
-    [key: string]: THREE.Mesh;
-  };
-} = {
-  position: {
-    front: [0, -0.94, 0.5],
-    back: [0, -0.94, -5.5],
-    right: [4.5, -0.94, -2.5],
-    left: [-4.5, -0.94, -2.5],
-    top: [0, 0.545, -2.5],
-  },
-  rotation: {
-    front: [Math.PI / 2, 0, 0],
-    back: [Math.PI / 2, 0, 0],
-    right: [0, 0, Math.PI / 2],
-    left: [0, 0, Math.PI / 2],
-    top: [0, 0, 0],
-  },
-  mesh: {
-    front: new THREE.Mesh(new THREE.BoxGeometry(tableWidth, 0.05, 3)),
-    back: new THREE.Mesh(new THREE.BoxGeometry(tableWidth, 0.05, 3)),
-    right: new THREE.Mesh(new THREE.BoxGeometry(3, 0.05, tableLength)),
-    left: new THREE.Mesh(new THREE.BoxGeometry(3, 0.05, tableLength)),
-    top: new THREE.Mesh(new THREE.BoxGeometry(tableWidth, 0.05, tableLength)),
-  },
-};
-
-const createMesh = (key: string) => {
-  const mesh = glassCase.mesh[key];
-  mesh.position.set(...glassCase.position[key]);
-  mesh.rotation.set(...glassCase.rotation[key]);
-  return mesh;
-};
-
-const keys = ["front", "back", "right", "left", "top"];
-
-const text = {
-  headers: ["About Myself", "My Journey"],
-  bodies: [
-    "I am a passionate web developer with a knack for creating interactive user experiences. With a strong foundation in both front-end and back-end development, I'm ready to bring your ideas to life",
-    "I began programming in 2018, starting with a curiosity for how cool things like games and stunning websites were made. This curiosity evolved into a deep-seated love for programming and app development. Since then, I’ve honed my skills and learned many valuable concepts.",
-  ],
-};
-
-const shootPosition = new THREE.Vector3(0, 6, 0);
-const shootDirection = new THREE.Vector3(
-  randFloatSpread(10),
-  -40,
-  randFloatSpread(10)
-);
-
 export const AboutScene = forwardRef<THREE.Group, GroupProps>(
   ({ ...props }, ref) => {
+    const tableWidth = 9;
+    const tableLength = 6;
+
+    const epoxyMaterial = useMemo(() => {
+      return new THREE.MeshPhysicalMaterial({
+        transmission: 1,
+        roughness: 0.35,
+        thickness: 4,
+        ior: 1.05,
+        anisotropy: 1,
+        clearcoat: 1,
+        attenuationDistance: 1,
+        attenuationColor: "white",
+        color: "white",
+      });
+    }, []);
+
+    const decalBallMaterial = useMemo(() => {
+      return new THREE.MeshStandardMaterial({ color: "navy" });
+    }, []);
+
+    const collisionBoxSize = {
+      x: 10,
+      y: 7,
+      z: 7,
+    };
+
+    const glassCase: {
+      position: {
+        [key: string]: [number, number, number];
+      };
+      rotation: {
+        [key: string]: [number, number, number];
+      };
+      mesh: {
+        [key: string]: THREE.Mesh;
+      };
+    } = useMemo(() => {
+      return {
+        position: {
+          front: [0, -0.94, 0.5],
+          back: [0, -0.94, -5.5],
+          right: [4.5, -0.94, -2.5],
+          left: [-4.5, -0.94, -2.5],
+          top: [0, 0.545, -2.5],
+        },
+        rotation: {
+          front: [Math.PI / 2, 0, 0],
+          back: [Math.PI / 2, 0, 0],
+          right: [0, 0, Math.PI / 2],
+          left: [0, 0, Math.PI / 2],
+          top: [0, 0, 0],
+        },
+        mesh: {
+          front: new THREE.Mesh(new THREE.BoxGeometry(tableWidth, 0.05, 3)),
+          back: new THREE.Mesh(new THREE.BoxGeometry(tableWidth, 0.05, 3)),
+          right: new THREE.Mesh(new THREE.BoxGeometry(3, 0.05, tableLength)),
+          left: new THREE.Mesh(new THREE.BoxGeometry(3, 0.05, tableLength)),
+          top: new THREE.Mesh(
+            new THREE.BoxGeometry(tableWidth, 0.05, tableLength)
+          ),
+        },
+      };
+    }, []);
+
+    const createGlassMesh = useCallback(
+      (key: string) => {
+        const mesh = glassCase.mesh[key];
+        mesh.position.set(...glassCase.position[key]);
+        mesh.rotation.set(...glassCase.rotation[key]);
+        return mesh;
+      },
+      [glassCase.mesh, glassCase.position, glassCase.rotation]
+    );
+
+    const defaultGlass = useMemo(() => {
+      const keys = ["front", "back", "right", "left", "top"];
+      return keys.map((key) => createGlassMesh(key));
+    }, [createGlassMesh]);
+
+    const text = useMemo(() => {
+      return {
+        headers: ["About Myself", "My Journey"],
+        bodies: [
+          "I am a passionate web developer with a knack for creating interactive experiences. With a strong foundation in both front-end and back-end development, I'm ready to bring your ideas to life",
+          "I began programming in 2018, starting with a curiosity for how cool things like games and stunning websites were made. This curiosity evolved into a deep-seated love for programming and app development. Since then, I’ve honed my skills and learned many valuable concepts.",
+        ],
+      };
+    }, []);
+
+    const shootPosition = useMemo(() => {
+      return new THREE.Vector3(0, 6, 0);
+    }, []);
+    const shootDirection = useMemo(() => {
+      return new THREE.Vector3(randFloatSpread(10), -40, randFloatSpread(10));
+    }, []);
+
     const [location] = useLocation();
     const [animate, setAnimate] = useState(false);
     const decals = useTexture([
@@ -134,14 +157,23 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
       "/icons/typescript.png",
     ]);
 
-    const [meshes, setMeshes] = useState<THREE.Mesh[]>(() =>
-      keys.map((key) => createMesh(key))
-    );
+    const [meshes, setMeshes] = useState<THREE.Mesh[]>(() => defaultGlass);
 
     const headerRef = useRef(text.headers[0]);
     const bodyRef = useRef(text.bodies[0]);
+    const decalBallsRef = useRef<THREE.Mesh[]>();
 
     const { camera } = useThree();
+
+    useEffect(() => {
+      headerRef.current = text.headers[0];
+      bodyRef.current = text.bodies[0];
+      if (location !== "/about") {
+        setTimeout(() => {
+          setMeshes(defaultGlass);
+        }, 1000);
+      }
+    }, [defaultGlass, location, text]);
 
     return (
       <group ref={ref} {...props}>
@@ -162,6 +194,7 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
         </Html>
 
         <Physics gravity={[0, -10, 0]}>
+          {/* breakable glass */}
           {meshes.map((mesh) => {
             return (
               <Break
@@ -294,27 +327,36 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
               if (location !== "/about" || animate) {
                 return;
               }
+              headerRef.current = text.headers[1];
+              bodyRef.current = text.bodies[1];
               setAnimate((prev) => !prev);
             }}
           />
         </Physics>
 
-        <mesh receiveShadow position={[0, -4, -9]}>
-          <planeGeometry args={[30, 30]} />
-          <meshPhongMaterial color={"dimgrey"} />
-        </mesh>
-        <mesh receiveShadow position={[0, -4, 0]} rotation-x={-Math.PI / 2}>
-          <planeGeometry args={[30, 30]} />
-          <meshPhongMaterial color={"dimgrey"} />
-        </mesh>
-        <mesh receiveShadow position={[10, -4, 0]} rotation-y={-Math.PI / 2}>
-          <planeGeometry args={[30, 30]} />
-          <meshPhongMaterial color={"dimgrey"} />
-        </mesh>
-        <mesh receiveShadow position={[-10, -4, 0]} rotation-y={-Math.PI * 1.5}>
-          <planeGeometry args={[30, 30]} />
-          <meshPhongMaterial color={"dimgrey"} />
-        </mesh>
+        {/* walls */}
+        <group>
+          <mesh receiveShadow position={[0, -4, -9]}>
+            <planeGeometry args={[30, 30]} />
+            <meshPhongMaterial color={"dimgrey"} />
+          </mesh>
+          <mesh receiveShadow position={[0, -4, 0]} rotation-x={-Math.PI / 2}>
+            <planeGeometry args={[30, 30]} />
+            <meshPhongMaterial color={"dimgrey"} />
+          </mesh>
+          <mesh receiveShadow position={[10, -4, 0]} rotation-y={-Math.PI / 2}>
+            <planeGeometry args={[30, 30]} />
+            <meshPhongMaterial color={"dimgrey"} />
+          </mesh>
+          <mesh
+            receiveShadow
+            position={[-10, -4, 0]}
+            rotation-y={-Math.PI * 1.5}
+          >
+            <planeGeometry args={[30, 30]} />
+            <meshPhongMaterial color={"dimgrey"} />
+          </mesh>
+        </group>
 
         <PointerSpotLight color="lightpink" position={[-5, 8, 0]} />
         <PointerSpotLight color="lightpink" position={[5, 8, 0]} />
