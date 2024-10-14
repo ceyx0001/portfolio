@@ -1,11 +1,15 @@
 import { useGLTF } from "@react-three/drei";
-import { RigidBody } from "@react-three/rapier";
+import { RapierRigidBody, RigidBody } from "@react-three/rapier";
+import { forwardRef, useImperativeHandle, useRef } from "react";
 import { Mesh } from "three";
 
-export function FilmReel({ ...props }) {
+export const FilmReel = forwardRef(({ ...props }, outerRef) => {
   const { nodes, materials } = useGLTF("/models/filmreel.glb");
+  const innerRef = useRef<RapierRigidBody>(null);
+
+  useImperativeHandle(outerRef, () => innerRef.current!);
   return (
-    <RigidBody {...props}>
+    <RigidBody ref={innerRef} {...props}>
       <group scale={0.05}>
         <mesh
           castShadow
@@ -40,6 +44,6 @@ export function FilmReel({ ...props }) {
       </group>
     </RigidBody>
   );
-}
+});
 
 useGLTF.preload("/filmreel.glb");

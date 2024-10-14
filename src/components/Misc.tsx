@@ -1,13 +1,18 @@
-import { useGLTF } from "@react-three/drei";
-import { RigidBody } from "@react-three/rapier";
+import { OrbitControls, useGLTF } from "@react-three/drei";
+import {
+  RapierRigidBody,
+  RigidBody,
+  RigidBodyProps,
+} from "@react-three/rapier";
 import * as THREE from "three";
 import { Ramen } from "./myself/Ramen";
 import { Headphones } from "./myself/Headphones";
 import { FilmReel } from "./myself/FilmReel";
-import { GroupProps } from "@react-three/fiber";
-import { useEffect } from "react";
+import { useEffect, useMemo, useRef } from "react";
+import { useLocation } from "wouter";
+import { RigidBodyGroup } from "../types";
 
-export const Misc = ({ reset, ...props }: { reset: boolean } & GroupProps) => {
+export const Misc = ({ ...props }) => {
   const { nodes: leafNode, materials: leafMat } = useGLTF("/models/leaf.glb");
   const { nodes: pokeballNode, materials: pokeballMat } = useGLTF(
     "/models/pokeball.glb"
@@ -17,17 +22,94 @@ export const Misc = ({ reset, ...props }: { reset: boolean } & GroupProps) => {
   const { nodes: volleyNode, materials: volleyMat } = useGLTF(
     "/models/volleyball.glb"
   );
+  const [location] = useLocation();
+  const rbRefs = useRef<Map<string, RapierRigidBody | RigidBodyGroup>>(
+    new Map()
+  );
+  const rbPositionRefs = useRef<Map<string, THREE.Vector3>>(new Map());
+
+  const rbProps: { [key: string]: RigidBodyProps } = useMemo(() => {
+    return {
+      leaf: {
+        position: new THREE.Vector3(11, -0.3, -5),
+        rotation: new THREE.Euler(2.4, 0, 0),
+      },
+      pokeball: {
+        position: new THREE.Vector3(15, 0.6, -16),
+      },
+      staff: {
+        position: new THREE.Vector3(9.8, 0, -16),
+        scale: 1.5,
+      },
+      volleyball: {
+        position: new THREE.Vector3(5, 2, -21),
+        scale: 3,
+      },
+      headphones: {
+        position: new THREE.Vector3(-18, 0, -16),
+        rotation: new THREE.Euler(1.5, 0.15, 2),
+        scale: 1.3,
+      },
+      filmReel: {
+        position: new THREE.Vector3(-8, 0, -22),
+        rotation: new THREE.Euler(Math.PI / 2, 0, 0),
+      },
+    };
+  }, []);
 
   useEffect(() => {
-    
-  }, [reset]);
+    if (location === "/about") {
+      return;
+    }
+
+    rbRefs.current.forEach((v, k) => {
+      if (v) {
+        console.log(k);
+        const props = rbProps[k];
+        if (props && v instanceof RapierRigidBody) {
+          const pos = rbPositionRefs.current.get(k);
+          if (props.position && pos) {
+            v.setTranslation(pos, false);
+          }
+
+          if (props.rotation) {
+            const quaternion = new THREE.Quaternion().setFromEuler(
+              props.rotation as THREE.Euler
+            );
+            v.setRotation(quaternion, false);
+          }
+        } else {
+          (v as RigidBodyGroup).resetInnerPositions();
+        }
+      }
+    });
+  }, [location, rbProps]);
+
+  useEffect(() => {
+    if (!rbRefs.current || !rbPositionRefs.current) {
+      return;
+    }
+
+    rbRefs.current.forEach((v, k) => {
+      if (v && v instanceof RapierRigidBody) {
+        rbPositionRefs.current.set(k, v.translation() as THREE.Vector3);
+      }
+    });
+  }, []);
 
   return (
     <group {...props}>
+      <OrbitControls />
+      <FilmReel
+        ref={(e: RapierRigidBody) => rbRefs.current.set("filmReel", e)}
+        {...rbProps.filmReel}
+      />
       <RigidBody
+        ref={(e: RapierRigidBody) => {
+          rbRefs.current.set("leaf", e);
+        }}
         colliders={"hull"}
-        position={[11, -0.3, -5]}
-        rotation={[2.4, 0, 0]}
+        {...rbProps.leaf}
       >
         <mesh
           castShadow
@@ -38,7 +120,11 @@ export const Misc = ({ reset, ...props }: { reset: boolean } & GroupProps) => {
         />
       </RigidBody>
 
-      <RigidBody colliders={"ball"} position={[15, 0.6, -16]}>
+      <RigidBody
+        ref={(e: RapierRigidBody) => rbRefs.current.set("pokeball", e)}
+        colliders={"ball"}
+        {...rbProps.pokeball}
+      >
         <mesh
           castShadow
           receiveShadow
@@ -49,7 +135,11 @@ export const Misc = ({ reset, ...props }: { reset: boolean } & GroupProps) => {
         />
       </RigidBody>
 
-      <RigidBody colliders={"hull"} position={[9.8, 0, -16]} scale={1.5}>
+      <RigidBody
+        ref={(e: RapierRigidBody) => rbRefs.current.set("staff", e)}
+        colliders={"hull"}
+        {...rbProps.staff}
+      >
         <group rotation={[-Math.PI / 2, 1, 0]}>
           <mesh
             castShadow
@@ -72,7 +162,11 @@ export const Misc = ({ reset, ...props }: { reset: boolean } & GroupProps) => {
         </group>
       </RigidBody>
 
-      <RigidBody position={[5, 2, -21]} scale={3} colliders={"ball"}>
+      <RigidBody
+        ref={(e: RapierRigidBody) => rbRefs.current.set("volleyball", e)}
+        colliders={"ball"}
+        {...rbProps.volleyball}
+      >
         <mesh
           castShadow
           receiveShadow
@@ -93,14 +187,17 @@ export const Misc = ({ reset, ...props }: { reset: boolean } & GroupProps) => {
         />
       </RigidBody>
 
-      <Ramen position={[0, -1.8, 0]} />
-      <Headphones
-        position={[-16, 0, -16]}
-        rotation={[1.5, 0.15, 2]}
-        scale={1.3}
-        colliders={"cuboid"}
+      <Ramen
+        ref={(e: RapierRigidBody) => rbRefs.current.set("ramen", e)}
+        key={location}
+        position={[0, -2.3, 0]}
       />
-      <FilmReel position={[-0.2, 2, -20]} rotation={[-2, 2, 0]} />
+
+      <Headphones
+        ref={(e: RapierRigidBody) => rbRefs.current.set("headphones", e)}
+        colliders={"cuboid"}
+        {...rbProps.headphones}
+      />
     </group>
   );
 };

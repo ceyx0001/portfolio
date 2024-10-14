@@ -1,3 +1,5 @@
+import { Group } from "three";
+
 export const OrbState = {
   UNENTERED: "unentered",
   TRANSITIONING: "transitioning",
@@ -14,3 +16,7 @@ export const MouseStates = {
 };
 
 export const GOLDENRATIO = 1.61803398875;
+
+export type RigidBodyGroup = Group & {
+  resetInnerPositions: () => void;
+};

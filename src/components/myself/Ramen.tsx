@@ -1,12 +1,51 @@
 import { useGLTF } from "@react-three/drei";
-import { interactionGroups, RigidBody } from "@react-three/rapier";
+import { GroupProps } from "@react-three/fiber";
+import {
+  interactionGroups,
+  RapierRigidBody,
+  RigidBody,
+} from "@react-three/rapier";
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { Mesh } from "three";
+import * as THREE from "three";
 
-export function Ramen({ ...props }) {
+export const Ramen = forwardRef(({ ...props }: GroupProps, outerRef) => {
   const { nodes, materials } = useGLTF("/models/ramen.glb");
+  const innerRef = useRef<THREE.Group>(null);
+  useImperativeHandle(outerRef, () => ({
+    ...innerRef.current,
+    resetInnerPositions: () => {
+      rbRefs.current.forEach((rb, key) => {
+        if (rb) {
+          const initialPos = rbPositionRefs.current.get(key);
+          if (initialPos) {
+            rb.setTranslation(initialPos, false);
+          }
+        }
+      });
+    },
+  }));
+  const rbRefs = useRef<Map<string, RapierRigidBody>>(new Map());
+  const rbPositionRefs = useRef<Map<string, THREE.Vector3>>(new Map());
+
+  useEffect(() => {
+    if (!rbRefs.current || !rbPositionRefs.current) {
+      return;
+    }
+
+    rbRefs.current.forEach((v, k) => {
+      if (v) {
+        rbPositionRefs.current.set(k, v.translation() as THREE.Vector3);
+      }
+    });
+  }, []);
+
   return (
-    <group {...props}>
-      <RigidBody restitution={0} colliders={"cuboid"}>
+    <group ref={innerRef} {...props}>
+      <RigidBody
+        colliders={"cuboid"}
+        ref={(e: RapierRigidBody) => rbRefs.current.set("tray", e)}
+      >
         <mesh
           castShadow
           receiveShadow
@@ -21,6 +60,7 @@ export function Ramen({ ...props }) {
         )}
         restitution={0}
         colliders={"cuboid"}
+        ref={(e: RapierRigidBody) => rbRefs.current.set("chopsticks", e)}
       >
         <mesh
           castShadow
@@ -36,6 +76,7 @@ export function Ramen({ ...props }) {
         )}
         restitution={0}
         colliders={"cuboid"}
+        ref={(e: RapierRigidBody) => rbRefs.current.set("stickholder", e)}
       >
         <mesh
           castShadow
@@ -51,6 +92,7 @@ export function Ramen({ ...props }) {
         )}
         restitution={0}
         colliders={"cuboid"}
+        ref={(e: RapierRigidBody) => rbRefs.current.set("cloth", e)}
       >
         <mesh
           castShadow
@@ -59,6 +101,7 @@ export function Ramen({ ...props }) {
           material={materials.Props}
         />
       </RigidBody>
+
       <RigidBody
         collisionGroups={interactionGroups(
           [0],
@@ -66,6 +109,7 @@ export function Ramen({ ...props }) {
         )}
         restitution={0}
         colliders={"cuboid"}
+        ref={(e: RapierRigidBody) => rbRefs.current.set("spoon", e)}
       >
         <mesh
           castShadow
@@ -81,6 +125,7 @@ export function Ramen({ ...props }) {
         )}
         restitution={0}
         colliders={"cuboid"}
+        ref={(e: RapierRigidBody) => rbRefs.current.set("spoonbowl", e)}
       >
         <mesh
           castShadow
@@ -90,7 +135,12 @@ export function Ramen({ ...props }) {
         />
       </RigidBody>
 
-      <RigidBody restitution={0} colliders={"hull"} position={[0, 1.3, 2.7]}>
+      <RigidBody
+        restitution={0}
+        colliders={"hull"}
+        position={[1.2, 0.1, 0.75]}
+        ref={(e: RapierRigidBody) => rbRefs.current.set("egg1", e)}
+      >
         <mesh
           castShadow
           receiveShadow
@@ -99,7 +149,12 @@ export function Ramen({ ...props }) {
         />
       </RigidBody>
 
-      <RigidBody restitution={0} colliders={"hull"} position={[4, 1.3, 2]}>
+      <RigidBody
+        restitution={0}
+        colliders={"hull"}
+        position={[3, 1, 1]}
+        ref={(e: RapierRigidBody) => rbRefs.current.set("egg2", e)}
+      >
         <mesh
           castShadow
           receiveShadow
@@ -116,6 +171,7 @@ export function Ramen({ ...props }) {
         position={[-3, 1, 0]}
         restitution={0}
         colliders={"cuboid"}
+        ref={(e: RapierRigidBody) => rbRefs.current.set("oniontower", e)}
       >
         <mesh
           castShadow
@@ -132,6 +188,7 @@ export function Ramen({ ...props }) {
         )}
         restitution={0}
         colliders={"cuboid"}
+        ref={(e: RapierRigidBody) => rbRefs.current.set("onioncuts", e)}
       >
         <mesh
           castShadow
@@ -227,6 +284,7 @@ export function Ramen({ ...props }) {
         position={[-3, 1, 0]}
         restitution={0}
         colliders={"cuboid"}
+        ref={(e: RapierRigidBody) => rbRefs.current.set("tinybowl", e)}
       >
         <mesh
           castShadow
@@ -237,6 +295,6 @@ export function Ramen({ ...props }) {
       </RigidBody>
     </group>
   );
-}
+});
 
 useGLTF.preload("/ramen.glb");

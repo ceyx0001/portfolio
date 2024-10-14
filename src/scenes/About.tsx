@@ -291,7 +291,6 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
             receiveShadow
             scale={0.2}
             position={[0, -2, 0]}
-            reset={location !== "/about"}
           />
 
           <CollisionBox

@@ -1,11 +1,15 @@
 import { useGLTF } from "@react-three/drei";
-import { RigidBody } from "@react-three/rapier";
+import { RapierRigidBody, RigidBody } from "@react-three/rapier";
+import { forwardRef, useImperativeHandle, useRef } from "react";
 import { Mesh } from "three";
 
-export function Headphones({ ...props }) {
+export const Headphones = forwardRef(({ ...props }, outerRef) => {
   const { nodes, materials } = useGLTF("/models/headphones.glb");
+  const innerRef = useRef<RapierRigidBody>(null);
+
+  useImperativeHandle(outerRef, () => innerRef.current!);
   return (
-    <RigidBody {...props}>
+    <RigidBody ref={innerRef} {...props}>
       <group name="Cube_0" position={[0, -1.22, 0]}>
         <mesh
           name="Object_5"
@@ -87,6 +91,6 @@ export function Headphones({ ...props }) {
       </group>
     </RigidBody>
   );
-}
+});
 
 useGLTF.preload("/models/headphones.glb");

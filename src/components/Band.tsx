@@ -114,8 +114,6 @@ export function Band({
       return;
     }
 
-    console.log("test");
-
     text.current.position.x = Math.sin(state.clock.elapsedTime) * 2;
 
     if (dragged) {
