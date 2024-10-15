@@ -29,7 +29,7 @@ export const Trail: React.FC<{
   useEffect(() => {
     const id = setTimeout(() => {
       setReset(false);
-    }, 1000);
+    }, 50);
     return () => {
       clearTimeout(id);
     };

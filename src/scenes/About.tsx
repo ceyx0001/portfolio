@@ -37,7 +37,6 @@ import { Band } from "../components/Band";
 import { randFloatSpread } from "three/src/math/MathUtils.js";
 import { PointerSpotLight } from "../components/PointerSpotLight";
 import { Pointer } from "../components/Pointer";
-import React from "react";
 
 const breaker = new ConvexObjectBreaker();
 
@@ -294,12 +293,7 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
             );
           })}
 
-          <Misc
-            castShadow
-            receiveShadow
-            scale={0.2}
-            position={[0, -2, 0]}
-          />
+          <Misc castShadow receiveShadow scale={0.2} position={[0, -2, 0]} />
 
           <CollisionBox
             xSize={collisionBoxSize.x}
