@@ -193,8 +193,7 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
       return () => clearTimeout(timer);
     }, [defaultGlass, location, shootPosition, text]);
 
-    useFrame(() => {
-    });
+    useFrame(() => {});
 
     return (
       <group ref={ref} {...props}>
@@ -296,7 +295,6 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
           })}
 
           <Misc
-            resetDelay={resetDelay}
             castShadow
             receiveShadow
             scale={0.2}

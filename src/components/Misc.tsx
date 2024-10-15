@@ -11,8 +11,9 @@ import { FilmReel } from "./myself/FilmReel";
 import { useEffect, useMemo, useRef } from "react";
 import { useLocation } from "wouter";
 import { RigidBodyGroup } from "../types";
+import { GroupProps } from "@react-three/fiber";
 
-export const Misc = ({ resetDelay = 0, ...props }) => {
+export const Misc = ({ ...props }: GroupProps) => {
   const { nodes: leafNode, materials: leafMat } = useGLTF("/models/leaf.glb");
   const { nodes: pokeballNode, materials: pokeballMat } = useGLTF(
     "/models/pokeball.glb"
@@ -39,7 +40,7 @@ export const Misc = ({ resetDelay = 0, ...props }) => {
         position: new THREE.Vector3(15, 0.6, -16),
       },
       staff: {
-        position: new THREE.Vector3(9.8, 1, -16),
+        position: new THREE.Vector3(9.8, 0, -16),
         scale: 1.5,
       },
       volleyball: {
@@ -60,52 +61,47 @@ export const Misc = ({ resetDelay = 0, ...props }) => {
 
   useEffect(() => {
     if (location === "/about") {
-      if (!initRef.current) {
-        rbRefs.current.forEach((v, k) => {
-          if (v && v instanceof RapierRigidBody) {
-            rbPositionRefs.current.set(k, v.translation() as THREE.Vector3);
-          }
-        });
-        initRef.current = true;
-        return;
-      }
       return;
     }
 
-    const id = setTimeout(() => {
+    if (!initRef.current) {
       rbRefs.current.forEach((v, k) => {
-        if (v) {
-          const props = rbProps[k];
-          if (props && v instanceof RapierRigidBody) {
-            const pos = rbPositionRefs.current.get(k);
-            if (props.position && pos) {
-              v.setTranslation(pos, false);
-            }
-
-            if (props.rotation) {
-              const quaternion = new THREE.Quaternion().setFromEuler(
-                props.rotation as THREE.Euler
-              );
-              v.setRotation(quaternion, false);
-            }
-          } else {
-            (v as RigidBodyGroup).resetInnerPositions();
-          }
+        if (v && v instanceof RapierRigidBody) {
+          rbPositionRefs.current.set(k, v.translation() as THREE.Vector3);
         }
       });
-    }, resetDelay);
+      initRef.current = true;
+      return;
+    }
 
-    return () => {
-      clearTimeout(id);
-    };
-  }, [location, rbProps, resetDelay]);
+    rbRefs.current.forEach((v, k) => {
+      if (v) {
+        const props = rbProps[k];
+        if (props && v instanceof RapierRigidBody) {
+          const pos = rbPositionRefs.current.get(k);
+          if (props.position && pos) {
+            v.setTranslation(pos, false);
+          }
+
+          if (props.rotation) {
+            const quaternion = new THREE.Quaternion().setFromEuler(
+              props.rotation as THREE.Euler
+            );
+            v.setRotation(quaternion, false);
+          }
+          v.setLinvel({ x: 0, y: 0, z: 0 }, true);
+          v.setAngvel({ x: 0, y: 0, z: 0 }, true);
+        } else {
+          (v as RigidBodyGroup).resetInnerPositions();
+        }
+      }
+    });
+  }, [location, rbProps]);
 
   return (
     <group {...props}>
       <FilmReel
-        ref={(e: RapierRigidBody) => {
-          rbRefs.current.set("filmReel", e);
-        }}
+        ref={(e: RapierRigidBody) => rbRefs.current.set("filmReel", e)}
         {...rbProps.filmReel}
       />
       <RigidBody
