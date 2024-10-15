@@ -63,7 +63,6 @@ export const Misc = ({ resetDelay = 0, ...props }) => {
       if (!initRef.current) {
         rbRefs.current.forEach((v, k) => {
           if (v && v instanceof RapierRigidBody) {
-            console.log("set - " + k);
             rbPositionRefs.current.set(k, v.translation() as THREE.Vector3);
           }
         });
@@ -79,7 +78,6 @@ export const Misc = ({ resetDelay = 0, ...props }) => {
           const props = rbProps[k];
           if (props && v instanceof RapierRigidBody) {
             const pos = rbPositionRefs.current.get(k);
-            console.log(k + " " + pos + " - " + props.position);
             if (props.position && pos) {
               v.setTranslation(pos, false);
             }

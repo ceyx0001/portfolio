@@ -12,6 +12,7 @@ import {
   applyProps,
   GroupProps,
   ThreeEvent,
+  useFrame,
   useThree,
 } from "@react-three/fiber";
 import { useLocation } from "wouter";
@@ -36,6 +37,7 @@ import { Band } from "../components/Band";
 import { randFloatSpread } from "three/src/math/MathUtils.js";
 import { PointerSpotLight } from "../components/PointerSpotLight";
 import { Pointer } from "../components/Pointer";
+import React from "react";
 
 const breaker = new ConvexObjectBreaker();
 
@@ -191,6 +193,9 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
       return () => clearTimeout(timer);
     }, [defaultGlass, location, shootPosition, text]);
 
+    useFrame(() => {
+    });
+
     return (
       <group ref={ref} {...props}>
         <Html
@@ -198,7 +203,7 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
           style={{ width: "40rem", pointerEvents: "none" }}
         >
           {location === "/about" && (
-            <Trail active={location === "/about"}>
+            <Trail active={location === "/about"} trigger={animate}>
               <span className={`${css.trailsTextHeader} ${css.trailsText}`}>
                 {displayText.header}
               </span>
