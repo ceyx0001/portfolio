@@ -8,10 +8,11 @@ import {
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { Mesh } from "three";
 import * as THREE from "three";
+import { RigidBodyGroup } from "../../types";
 
 export const Ramen = forwardRef(({ ...props }: GroupProps, outerRef) => {
   const { nodes, materials } = useGLTF("/models/ramen.glb");
-  const innerRef = useRef<THREE.Group>(null);
+  const innerRef = useRef<RigidBodyGroup>(null);
   useImperativeHandle(outerRef, () => ({
     ...innerRef.current,
     resetInnerPositions: () => {

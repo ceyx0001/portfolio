@@ -17,6 +17,6 @@ export const MouseStates = {
 
 export const GOLDENRATIO = 1.61803398875;
 
-export type RigidBodyGroup = Group & {
+export type RigidBodyGroup = {
   resetInnerPositions: () => void;
-};
+} & Group;

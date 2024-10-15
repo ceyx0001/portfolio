@@ -14,6 +14,7 @@ export const Trail: React.FC<{
     height: active ? 110 : 0,
     from: { opacity: 0, y: 200, height: 0 },
     delay: delay,
+    reset: true,
   });
   return (
     <div>

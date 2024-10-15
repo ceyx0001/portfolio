@@ -43,12 +43,28 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
   ({ ...props }, ref) => {
     const tableWidth = 9;
     const tableLength = 6;
+    const decals = useTexture([
+      "/icons/c.png",
+      "/icons/css3.png",
+      "/icons/git.png",
+      "/icons/html5.png",
+      "/icons/java.png",
+      "/icons/javascript.png",
+      "/icons/mongodb.png",
+      "/icons/mysql.png",
+      "/icons/postgresql.png",
+      "/icons/python.png",
+      "/icons/react.png",
+      "/icons/tailwind.png",
+      "/icons/three.png",
+      "/icons/typescript.png",
+    ]);
 
     const epoxyMaterial = useMemo(() => {
       return new THREE.MeshPhysicalMaterial({
         transmission: 1,
         roughness: 0.35,
-        thickness: 4,
+        thickness: 15,
         ior: 1.05,
         anisotropy: 1,
         clearcoat: 1,
@@ -122,13 +138,16 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
     }, [createGlassMesh]);
 
     const text = useMemo(() => {
-      return {
-        headers: ["About Myself", "My Journey"],
-        bodies: [
-          "I am a passionate web developer with a knack for creating interactive experiences. With a strong foundation in both front-end and back-end development, I'm ready to bring your ideas to life",
-          "I began programming in 2018, starting with a curiosity for how cool things like games and stunning websites were made. This curiosity evolved into a deep-seated love for programming and app development. Since then, I’ve honed my skills and learned many valuable concepts.",
-        ],
-      };
+      const headers = ["About Myself", "My Journey"];
+      const bodies = [
+        "I am a passionate web developer with a knack for creating interactive experiences. With a strong foundation in both front-end and back-end development, I'm ready to bring your ideas to life",
+        "I began programming in 2018, starting with a curiosity for how cool things like games and stunning websites were made. This curiosity evolved into a deep-seated love for programming and app development. Since then, I’ve honed my skills and learned many valuable concepts.",
+      ];
+
+      return headers.map((header, index) => ({
+        header,
+        body: bodies[index],
+      }));
     }, []);
 
     const { shootPosition, shootDirection, bandPosition } = useMemo(() => {
@@ -139,43 +158,26 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
           -40,
           randFloatSpread(10)
         ),
-        bandPosition: new THREE.Vector3(GOLDENRATIO * 2, 1, GOLDENRATIO * 3),
+        bandPosition: new THREE.Vector3(GOLDENRATIO * 2, 1.5, GOLDENRATIO * 1),
       };
     }, []);
 
     const [location] = useLocation();
     const [animate, setAnimate] = useState(false);
-    const decals = useTexture([
-      "/icons/c.png",
-      "/icons/css3.png",
-      "/icons/git.png",
-      "/icons/html5.png",
-      "/icons/java.png",
-      "/icons/javascript.png",
-      "/icons/mongodb.png",
-      "/icons/mysql.png",
-      "/icons/postgresql.png",
-      "/icons/python.png",
-      "/icons/react.png",
-      "/icons/tailwind.png",
-      "/icons/three.png",
-      "/icons/typescript.png",
-    ]);
-
     const [meshes, setMeshes] = useState<THREE.Mesh[]>(() => defaultGlass);
+    const [displayText, setDisplayText] = useState(text[0]);
 
-    const headerRef = useRef(text.headers[0]);
-    const bodyRef = useRef(text.bodies[0]);
     const ballsRBRef = useRef<RapierRigidBody[]>([]);
 
     const { camera } = useThree();
+    const resetDelay = 300;
 
     // reset scene upon location change
     useEffect(() => {
-      headerRef.current = text.headers[0];
-      bodyRef.current = text.bodies[0];
+      let timer: NodeJS.Timeout;
       if (location !== "/about") {
-        setTimeout(() => {
+        setDisplayText(text[0]);
+        timer = setTimeout(() => {
           setMeshes(defaultGlass);
           setAnimate(false);
 
@@ -183,8 +185,10 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
             e.setTranslation(shootPosition, true);
             e.setBodyType(1, true);
           });
-        }, 500);
+        }, resetDelay);
       }
+
+      return () => clearTimeout(timer);
     }, [defaultGlass, location, shootPosition, text]);
 
     return (
@@ -194,12 +198,12 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
           style={{ width: "40rem", pointerEvents: "none" }}
         >
           {location === "/about" && (
-            <Trail active={location === "/about"} delay={500}>
+            <Trail active={location === "/about"}>
               <span className={`${css.trailsTextHeader} ${css.trailsText}`}>
-                {headerRef.current}
+                {displayText.header}
               </span>
               <span className={`${css.trailsTextBody} ${css.trailsText}`}>
-                {bodyRef.current}
+                {displayText.body}
               </span>
             </Trail>
           )}
@@ -287,6 +291,7 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
           })}
 
           <Misc
+            resetDelay={resetDelay}
             castShadow
             receiveShadow
             scale={0.2}
@@ -350,8 +355,7 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
               if (location !== "/about" || animate) {
                 return;
               }
-              headerRef.current = text.headers[1];
-              bodyRef.current = text.bodies[1];
+              setDisplayText(text[1]);
               setAnimate((prev) => !prev);
             }}
           />
