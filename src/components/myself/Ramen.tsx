@@ -143,8 +143,6 @@ export const Ramen = forwardRef(({ ...props }: GroupProps, outerRef) => {
         ref={(e: RapierRigidBody) => rbRefs.current.set("egg1", e)}
       >
         <mesh
-          castShadow
-          receiveShadow
           geometry={(nodes.egg_1_food_0 as Mesh).geometry}
           material={materials.food}
         />
@@ -157,8 +155,6 @@ export const Ramen = forwardRef(({ ...props }: GroupProps, outerRef) => {
         ref={(e: RapierRigidBody) => rbRefs.current.set("egg2", e)}
       >
         <mesh
-          castShadow
-          receiveShadow
           geometry={(nodes.egg_2_food_0 as Mesh).geometry}
           material={materials.food}
         />
@@ -175,8 +171,6 @@ export const Ramen = forwardRef(({ ...props }: GroupProps, outerRef) => {
         ref={(e: RapierRigidBody) => rbRefs.current.set("oniontower", e)}
       >
         <mesh
-          castShadow
-          receiveShadow
           geometry={(nodes.Onion_tower_food_0 as Mesh).geometry}
           material={materials.food}
         />
@@ -192,86 +186,58 @@ export const Ramen = forwardRef(({ ...props }: GroupProps, outerRef) => {
         ref={(e: RapierRigidBody) => rbRefs.current.set("onioncuts", e)}
       >
         <mesh
-          castShadow
-          receiveShadow
           geometry={(nodes.Onion_cut_1_food_0 as Mesh).geometry}
           material={materials.food}
         />
         <mesh
-          castShadow
-          receiveShadow
           geometry={(nodes.Onion_cut_2_food_0 as Mesh).geometry}
           material={materials.food}
         />
         <mesh
-          castShadow
-          receiveShadow
           geometry={(nodes.Onion_cut_3_food_0 as Mesh).geometry}
           material={materials.food}
         />
         <mesh
-          castShadow
-          receiveShadow
           geometry={(nodes.Ham_1_food_0 as Mesh).geometry}
           material={materials.food}
         />
         <mesh
-          castShadow
-          receiveShadow
           geometry={(nodes.Ham_2_food_0 as Mesh).geometry}
           material={materials.food}
         />
         <mesh
-          castShadow
-          receiveShadow
           geometry={(nodes.Ham_3_food_0 as Mesh).geometry}
           material={materials.food}
         />
         <mesh
-          castShadow
-          receiveShadow
           geometry={(nodes.Bowl_Props_0 as Mesh).geometry}
           material={materials.Props}
         />
         <mesh
-          castShadow
-          receiveShadow
           geometry={(nodes.Noodles_noodles_0 as Mesh).geometry}
           material={materials.noodles}
         />
         <mesh
-          castShadow
-          receiveShadow
           geometry={(nodes.Seaweed_food_0 as Mesh).geometry}
           material={materials.food}
         />
         <mesh
-          castShadow
-          receiveShadow
           geometry={(nodes.Seaweed2_food_0 as Mesh).geometry}
           material={materials.food}
         />
         <mesh
-          castShadow
-          receiveShadow
           geometry={(nodes.banboo_shoot_1_food_0 as Mesh).geometry}
           material={materials.food}
         />
         <mesh
-          castShadow
-          receiveShadow
           geometry={(nodes.banboo_shoot_2_food_0 as Mesh).geometry}
           material={materials.food}
         />
         <mesh
-          castShadow
-          receiveShadow
           geometry={(nodes.banboo_shoot_3_food_0 as Mesh).geometry}
           material={materials.food}
         />
         <mesh
-          castShadow
-          receiveShadow
           geometry={(nodes.banboo_shoot_4_food_0 as Mesh).geometry}
           material={materials.food}
         />

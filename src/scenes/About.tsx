@@ -21,8 +21,11 @@ import {
   Html,
   useTexture,
   Cylinder,
-  Environment,
   PerspectiveCamera,
+  Sky,
+  Plane,
+  MeshTransmissionMaterial,
+  OrbitControls,
 } from "@react-three/drei";
 import { GOLDENRATIO } from "../types";
 import { Physics, RapierRigidBody, RigidBody } from "@react-three/rapier";
@@ -37,6 +40,7 @@ import { Band } from "../components/Band";
 import { randFloatSpread } from "three/src/math/MathUtils.js";
 import { PointerSpotLight } from "../components/PointerSpotLight";
 import { Pointer } from "../components/Pointer";
+import { easing } from "maath";
 
 const breaker = new ConvexObjectBreaker();
 
@@ -44,6 +48,7 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
   ({ ...props }, ref) => {
     const tableWidth = 9;
     const tableLength = 6;
+
     const decals = useTexture([
       "/icons/c.png",
       "/icons/css3.png",
@@ -63,11 +68,10 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
 
     const epoxyMaterial = useMemo(() => {
       return new THREE.MeshPhysicalMaterial({
-        transmission: 1,
+        transmission: 0.95,
         roughness: 0.35,
         thickness: 15,
         ior: 1.05,
-        anisotropy: 1,
         clearcoat: 1,
         attenuationDistance: 1,
         attenuationColor: "white",
@@ -81,9 +85,64 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
 
     const collisionBoxSize = {
       x: 10,
-      y: 7,
+      y: 9,
       z: 7,
     };
+
+    const blindsStartPosition = useMemo(() => {
+      return new THREE.Vector3(10.75, 3, -2);
+    }, []);
+
+    const planeProps = useMemo(() => {
+      return {
+        floor: {
+          args: [23, 14] as [number, number],
+          position: new THREE.Vector3(0, -4, -2),
+          rotation: new THREE.Euler(-Math.PI / 2, 0, 0),
+        },
+        ceiling: {
+          args: [20, 14] as [number, number],
+          position: new THREE.Vector3(0, 10, -2),
+          rotation: new THREE.Euler(Math.PI / 2, 0, 0),
+        },
+        rightWall: {
+          args: [14, 14] as [number, number],
+          position: new THREE.Vector3(-10, 3, -2),
+          rotation: new THREE.Euler(0, Math.PI / 2, 0),
+        },
+        backWall: {
+          args: [23, 14] as [number, number],
+          position: new THREE.Vector3(0, 3, -9),
+          rotation: new THREE.Euler(0, 0, 0),
+        },
+        frontWall: {
+          args: [20, 14] as [number, number],
+          position: new THREE.Vector3(0, 3, 5),
+          rotation: new THREE.Euler(Math.PI, 0, 0),
+        },
+      };
+    }, []);
+
+    const tableLegProps = useMemo(() => {
+      return {
+        fr: {
+          args: [1, 0.5, 1.12] as [number, number, number],
+          position: new THREE.Vector3(3.5, -3.5, -0.5),
+        },
+        fl: {
+          args: [1, 0.5, 1.12] as [number, number, number],
+          position: new THREE.Vector3(-3.5, -3.5, -0.5),
+        },
+        br: {
+          args: [1, 0.5, 1.12] as [number, number, number],
+          position: new THREE.Vector3(3.5, -3.5, -4.5),
+        },
+        bl: {
+          args: [1, 0.5, 1.12] as [number, number, number],
+          position: new THREE.Vector3(-3.5, -3.5, -4.5),
+        },
+      };
+    }, []);
 
     const glassCase: {
       position: {
@@ -153,13 +212,13 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
 
     const { shootPosition, shootDirection, bandPosition } = useMemo(() => {
       return {
-        shootPosition: new THREE.Vector3(0, 6, 0),
+        shootPosition: new THREE.Vector3(0, 10, 0),
         shootDirection: new THREE.Vector3(
           randFloatSpread(10),
           -40,
           randFloatSpread(10)
         ),
-        bandPosition: new THREE.Vector3(GOLDENRATIO * 2, 1.5, GOLDENRATIO * 1),
+        bandPosition: new THREE.Vector3(GOLDENRATIO * -3, 1.5, GOLDENRATIO),
       };
     }, []);
 
@@ -169,19 +228,20 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
     const [displayText, setDisplayText] = useState(text[0]);
 
     const ballsRBRef = useRef<RapierRigidBody[]>([]);
+    const blindsRef = useRef<THREE.Mesh>(null);
 
     const { camera } = useThree();
-    const resetDelay = 300;
+    const resetDelay = 400;
 
     // reset scene upon location change
     useEffect(() => {
       let timer: NodeJS.Timeout;
       if (location !== "/about") {
-        setDisplayText(text[0]);
         timer = setTimeout(() => {
           setMeshes(defaultGlass);
           setAnimate(false);
-
+          setDisplayText(text[0]);
+          blindsRef.current?.position.copy(blindsStartPosition);
           ballsRBRef.current.forEach((e) => {
             e.setTranslation(shootPosition, true);
             e.setBodyType(1, true);
@@ -190,26 +250,40 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
       }
 
       return () => clearTimeout(timer);
-    }, [defaultGlass, location, shootPosition, text]);
+    }, [blindsStartPosition, defaultGlass, location, shootPosition, text]);
 
-    useFrame(() => {});
+    useFrame((_, delta) => {
+      if (blindsRef.current && animate) {
+        console.log("animating");
+        easing.damp3(
+          blindsRef.current.position,
+          [
+            blindsStartPosition.x,
+            blindsStartPosition.y + 15,
+            blindsStartPosition.z,
+          ],
+          10,
+          5,
+          delta
+        );
+      }
+    });
 
     return (
       <group ref={ref} {...props}>
+        <OrbitControls/>
         <Html
-          position={[-5 * GOLDENRATIO, GOLDENRATIO, 0]}
+          position={[-5 * GOLDENRATIO, GOLDENRATIO * 1.25, 0]}
           style={{ width: "40rem", pointerEvents: "none" }}
         >
-          {location === "/about" && (
-            <Trail active={location === "/about"} trigger={animate}>
-              <span className={`${css.trailsTextHeader} ${css.trailsText}`}>
-                {displayText.header}
-              </span>
-              <span className={`${css.trailsTextBody} ${css.trailsText}`}>
-                {displayText.body}
-              </span>
-            </Trail>
-          )}
+          {location === "/about" && <Trail active={location === "/about"} trigger={animate}>
+            <span className={`${css.trailsTextHeader} ${css.trailsText}`}>
+              {displayText.header}
+            </span>
+            <span className={`${css.trailsTextBody} ${css.trailsText}`}>
+              {displayText.body}
+            </span>
+          </Trail>}
         </Html>
 
         <Physics gravity={[0, -10, 0]}>
@@ -275,7 +349,7 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
                 activate={animate}
                 delay={i * 100}
                 direction={shootDirection}
-                rbScale={0.5}
+                rbScale={1.25}
                 ref={(e: RapierRigidBody) => {
                   if (!e) {
                     return;
@@ -286,20 +360,19 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
                 <DecalBall
                   decal={decal}
                   material={decalBallMaterial}
-                  scale={2}
-                  decalScale={3}
+                  decalScale={1}
                 />
               </Shoot>
             );
           })}
 
-          <Misc castShadow receiveShadow scale={0.2} position={[0, -2, 0]} />
+          <Misc castShadow scale={0.2} position={[0, -2, 0]} />
 
           <CollisionBox
             xSize={collisionBoxSize.x}
             ySize={collisionBoxSize.y}
             zSize={collisionBoxSize.z}
-            position={[0, 3, -2]}
+            position={[0, 5, -2]}
           />
 
           {/*table*/}
@@ -312,38 +385,16 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
             >
               <meshStandardMaterial color={"black"} />
             </Box>
-            <Cylinder
-              args={[1, 0.5, 1.12]}
-              position={[3.5, -3.5, -0.5]}
-              castShadow
-              receiveShadow
-            >
-              <meshStandardMaterial color={"orange"} />
-            </Cylinder>
-            <Cylinder
-              args={[1, 0.5, 1.12]}
-              position={[-3.5, -3.5, -0.5]}
-              castShadow
-              receiveShadow
-            >
-              <meshStandardMaterial color={"orange"} />
-            </Cylinder>
-            <Cylinder
-              args={[1, 0.5, 1.12]}
-              position={[3.5, -3.5, -4.5]}
-              castShadow
-              receiveShadow
-            >
-              <meshStandardMaterial color={"orange"} />
-            </Cylinder>
-            <Cylinder
-              args={[1, 0.5, 1.12]}
-              position={[-3.5, -3.5, -4.5]}
-              castShadow
-              receiveShadow
-            >
-              <meshStandardMaterial color={"orange"} />
-            </Cylinder>
+            {Object.entries(tableLegProps).map(([name, props]) => (
+              <Cylinder
+                key={"about-table-leg-" + name}
+                castShadow
+                receiveShadow
+                {...props}
+              >
+                <meshStandardMaterial color={"orange"} />
+              </Cylinder>
+            ))}
           </RigidBody>
 
           <Band
@@ -358,35 +409,54 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
           />
         </Physics>
 
-        {/* walls */}
-        <group>
-          <mesh receiveShadow position={[0, -4, -9]}>
-            <planeGeometry args={[30, 30]} />
-            <meshPhongMaterial color={"dimgrey"} />
-          </mesh>
-          <mesh receiveShadow position={[0, -4, 0]} rotation-x={-Math.PI / 2}>
-            <planeGeometry args={[30, 30]} />
-            <meshPhongMaterial color={"dimgrey"} />
-          </mesh>
-          <mesh receiveShadow position={[10, -4, 0]} rotation-y={-Math.PI / 2}>
-            <planeGeometry args={[30, 30]} />
-            <meshPhongMaterial color={"dimgrey"} />
-          </mesh>
-          <mesh
+        {Object.entries(planeProps).map(([name, props]) => (
+          <Plane
+            key={"about-box-plane" + name}
+            castShadow
             receiveShadow
-            position={[-10, -4, 0]}
-            rotation-y={-Math.PI * 1.5}
+            {...props}
           >
-            <planeGeometry args={[30, 30]} />
-            <meshPhongMaterial color={"dimgrey"} />
-          </mesh>
+            <meshPhongMaterial color={"gray"} />
+          </Plane>
+        ))}
+
+        {/* blinds*/}
+        <Box
+          ref={blindsRef}
+          castShadow
+          receiveShadow
+          args={[14, 14, 1.5]}
+          rotation={[0, Math.PI / 2, 0]}
+          position={blindsStartPosition}
+        >
+          <MeshTransmissionMaterial color={"gray"} />
+        </Box>
+
+        <PointerSpotLight color="lightpink" position={[-5, 10, 0]} />
+        <PointerSpotLight color="lightpink" position={[5, 10, 0]} />
+        <ambientLight intensity={0.3} />
+
+        <Sky inclination={0.52} />
+        <Light />
+
+        {/* poles */}
+        <group>
+          <Box castShadow args={[1.5, 14, 0.6]} position={[10.5, 3, -6]}>
+            <meshStandardMaterial color="orange" />
+          </Box>
+          <Box castShadow args={[1.5, 14, 0.5]} position={[10.5, 3, -4]}>
+            <meshStandardMaterial color="orange" />
+          </Box>
+          <Box castShadow args={[1.5, 14, 0.5]} position={[10.5, 3, -2]}>
+            <meshStandardMaterial color="orange" />
+          </Box>
+          <Box castShadow args={[1.5, 14, 0.5]} position={[10.5, 3, 0]}>
+            <meshStandardMaterial color="orange" />
+          </Box>
+          <Box castShadow args={[1.5, 14, 0.5]} position={[10.5, 3, 2]}>
+            <meshStandardMaterial color="orange" />
+          </Box>
         </group>
-
-        <PointerSpotLight color="lightpink" position={[-5, 8, 0]} />
-        <PointerSpotLight color="lightpink" position={[5, 8, 0]} />
-
-        <ambientLight intensity={0.5} color={"white"} />
-        <Environment preset="dawn" environmentIntensity={0.5} />
 
         <PerspectiveCamera
           position={[0, 4, 12]}
@@ -397,3 +467,30 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
     );
   }
 );
+
+function Light() {
+  const ref = useRef<THREE.Group>(null);
+  useFrame((state, delta) => {
+    easing.dampE(
+      ref.current!.rotation,
+      [(state.pointer.y * Math.PI) / 50, (state.pointer.x * Math.PI) / 20, 0],
+      0.2,
+      delta
+    );
+  });
+  return (
+    <group ref={ref}>
+      <directionalLight
+        position={[10, 7, 0]}
+        castShadow
+        intensity={5}
+        shadow-mapSize={2048}
+      >
+        <orthographicCamera
+          attach="shadow-camera"
+          args={[-13, 13, 16, -12, -12, 30]}
+        />
+      </directionalLight>
+    </group>
+  );
+}

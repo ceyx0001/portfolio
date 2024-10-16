@@ -50,18 +50,14 @@ export function Band({
   position = [0, 0, 0] as unknown as THREE.Vector3,
   onPull = () => {},
 }: BandProps) {
-  const repositionX = position.x > 0 ? -position.x : position.x;
-  const repositionY = position.x > 0 ? -position.y : position.y;
-  const repositionZ = position.x > 0 ? -position.z : position.z;
-  const { reposition, vec, ang, rot, dir } = useMemo(() => {
+  const { vec, ang, rot, dir } = useMemo(() => {
     return {
-      reposition: new THREE.Vector3(repositionX, repositionY, repositionZ),
       vec: new THREE.Vector3(),
       ang: new THREE.Vector3(),
       rot: new THREE.Vector3(),
       dir: new THREE.Vector3(),
     };
-  }, [repositionX, repositionY, repositionZ]);
+  }, []);
 
   const band = useRef<THREE.Mesh>(null),
     fixed = useRef<CustomRigidBody>(null),
@@ -173,11 +169,10 @@ export function Band({
 
   curve.curveType = "chordal";
 
-  const groupRef = useRef(null);
-
   return (
-    <group position={position} ref={groupRef}>
-      <group position={[0, 4, 0]}>
+    <group>
+      {/* Inner group */}
+      <group position={[position.x, 4 + position.y, position.z]}>
         <RigidBody ref={fixed} {...segmentProps} type="fixed" />
         <RigidBody position={[0.5, 0, 0]} ref={j1} {...segmentProps}>
           <BallCollider args={[0.1]} />
@@ -226,9 +221,12 @@ export function Band({
                     font={"/fonts/roboto-mono.woff"}
                     ref={text}
                     fontSize={0.5}
-                    color="orange"
                     textAlign="center"
                   >
+                    <meshStandardMaterial
+                      emissive={"orange"}
+                      emissiveIntensity={10}
+                    />
                     click glass {"\n"} or {"\n"} pull me
                   </Text>
                 </RenderTexture>
@@ -242,7 +240,7 @@ export function Band({
           </group>
         </RigidBody>
       </group>
-      <mesh ref={band} position={reposition}>
+      <mesh ref={band}>
         <meshLineGeometry />
         <meshLineMaterial color="orange" useMap={0} lineWidth={0.05} />
       </mesh>

@@ -14,7 +14,7 @@ import { RigidBodyGroup } from "../types";
 import { GroupProps } from "@react-three/fiber";
 
 export const Misc = ({ ...props }: GroupProps) => {
-  const { nodes: leafNode, materials: leafMat } = useGLTF("/models/leaf.glb");
+  const { nodes: leafNode } = useGLTF("/models/leaf.glb");
   const { nodes: pokeballNode, materials: pokeballMat } = useGLTF(
     "/models/pokeball.glb"
   );
@@ -115,9 +115,10 @@ export const Misc = ({ ...props }: GroupProps) => {
           castShadow
           receiveShadow
           geometry={(leafNode.leaf001_leaf_0 as THREE.Mesh).geometry}
-          material={leafMat["leaf"]}
           scale={0.3}
-        />
+        >
+          <meshStandardMaterial color={"red"} />
+        </mesh>
       </RigidBody>
 
       <RigidBody

@@ -6,6 +6,7 @@ export const DecalBall = ({
   decalScale = 1,
   material,
   decal,
+  ...props
 }: {
   scale?: number;
   decalScale?: number;
@@ -13,7 +14,13 @@ export const DecalBall = ({
   decal: Texture;
 }) => {
   return (
-    <Sphere args={[scale, 32, 32]} material={material}>
+    <Sphere
+      args={[scale, 32, 32]}
+      material={material}
+      {...props}
+      castShadow
+      receiveShadow
+    >
       <Decal
         depthTest={true}
         position={[0, 0, scale]}
