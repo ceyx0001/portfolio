@@ -3,6 +3,8 @@ import { RapierRigidBody, RigidBody } from "@react-three/rapier";
 import { forwardRef, useImperativeHandle, useRef } from "react";
 import { Mesh } from "three";
 
+useGLTF.preload("/models/headphones.glb");
+
 export const Headphones = forwardRef(({ ...props }, outerRef) => {
   const { nodes, materials } = useGLTF("/models/headphones.glb");
   const innerRef = useRef<RapierRigidBody>(null);
@@ -92,5 +94,3 @@ export const Headphones = forwardRef(({ ...props }, outerRef) => {
     </RigidBody>
   );
 });
-
-useGLTF.preload("/models/headphones.glb");

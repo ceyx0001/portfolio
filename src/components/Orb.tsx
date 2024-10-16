@@ -6,6 +6,8 @@ import { forwardRef, useImperativeHandle, useMemo, useRef } from "react";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 import { OrbState } from "../types";
 
+useGLTF.preload("/models/orb.glb");
+
 type OrbProps = {
   animate?: boolean;
   orbState: string;
@@ -258,5 +260,3 @@ export const Orb = forwardRef<THREE.Mesh, OrbProps>(
     );
   }
 );
-
-useGLTF.preload("/models/orb.glb");

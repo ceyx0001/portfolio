@@ -10,6 +10,8 @@ import { Mesh } from "three";
 import * as THREE from "three";
 import { RigidBodyGroup } from "../../types";
 
+useGLTF.preload("/models/ramen.glb");
+
 export const Ramen = forwardRef(({ ...props }: GroupProps, outerRef) => {
   const { nodes, materials } = useGLTF("/models/ramen.glb");
   const innerRef = useRef<RigidBodyGroup>(null);
@@ -263,5 +265,3 @@ export const Ramen = forwardRef(({ ...props }: GroupProps, outerRef) => {
     </group>
   );
 });
-
-useGLTF.preload("/ramen.glb");

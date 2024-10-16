@@ -22,9 +22,6 @@ type MenuProps = {
 
 export const Menu = forwardRef<THREE.Group, MenuProps>(
   ({ orbState, setOrbState, ...props }, ref) => {
-    const frontZ = -0.1;
-    const behindZ = -5.2;
-
     const [location, setLocation] = useLocation();
     const viewport = useThree((state) => state.viewport);
     const [, api] = useSpring(() => ({
@@ -49,6 +46,8 @@ export const Menu = forwardRef<THREE.Group, MenuProps>(
       }
     }, [api, location, viewport.height]);
 
+    const frontZ = -0.1;
+    const behindZ = -5.2;
     const buttons = [
       {
         text: "About",
@@ -81,7 +80,7 @@ export const Menu = forwardRef<THREE.Group, MenuProps>(
               key={index + "front"}
               font="/fonts/roboto-mono.woff"
               position={[0, (0.75 - index) * 2, frontZ]}
-              color={"green"}
+              color={"gray"}
               material-opacity={0.5}
               onClick={button.handler}
               fontSize={1}
@@ -102,7 +101,7 @@ export const Menu = forwardRef<THREE.Group, MenuProps>(
               key={index + "behind"}
               font="/fonts/roboto-mono.woff"
               position={[0, (0.75 - index) * 4, behindZ]}
-              color={"red"}
+              color={"orange"}
               fontSize={2}
             >
               {button.text}
@@ -113,10 +112,12 @@ export const Menu = forwardRef<THREE.Group, MenuProps>(
           </Circle>
         </group>
 
-        
         <mesh>
           <planeGeometry args={[viewport.width, viewport.height]} />
-          <meshBasicMaterial clippingPlanes={[clippingPlane]} clipShadows={true}>
+          <meshBasicMaterial
+            clippingPlanes={[clippingPlane]}
+            clipShadows={true}
+          >
             <RenderTexture attach={"map"}>
               <AboutScene />
               <PerspectiveCamera

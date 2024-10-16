@@ -4,6 +4,7 @@ import {
   forwardRef,
   useCallback,
   useEffect,
+  useImperativeHandle,
   useMemo,
   useRef,
   useState,
@@ -11,6 +12,7 @@ import {
 import {
   applyProps,
   GroupProps,
+  invalidate,
   ThreeEvent,
   useFrame,
   useThree,
@@ -25,7 +27,6 @@ import {
   Sky,
   Plane,
   MeshTransmissionMaterial,
-  OrbitControls,
 } from "@react-three/drei";
 import { GOLDENRATIO } from "../types";
 import { Physics, RapierRigidBody, RigidBody } from "@react-three/rapier";
@@ -45,10 +46,7 @@ import { easing } from "maath";
 const breaker = new ConvexObjectBreaker();
 
 export const AboutScene = forwardRef<THREE.Group, GroupProps>(
-  ({ ...props }, ref) => {
-    const tableWidth = 9;
-    const tableLength = 6;
-
+  ({ ...props }, outerRef) => {
     const decals = useTexture([
       "/icons/c.png",
       "/icons/css3.png",
@@ -66,83 +64,14 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
       "/icons/typescript.png",
     ]);
 
-    const epoxyMaterial = useMemo(() => {
-      return new THREE.MeshPhysicalMaterial({
-        transmission: 0.95,
-        roughness: 0.35,
-        thickness: 15,
-        ior: 1.05,
-        clearcoat: 1,
-        attenuationDistance: 1,
-        attenuationColor: "white",
-        color: "white",
-      });
-    }, []);
-
-    const decalBallMaterial = useMemo(() => {
-      return new THREE.MeshStandardMaterial({ color: "navy" });
-    }, []);
-
+    const tableWidth = 9;
+    const tableLength = 6;
+    const resetDelay = 400;
     const collisionBoxSize = {
       x: 10,
       y: 9,
       z: 7,
     };
-
-    const blindsStartPosition = useMemo(() => {
-      return new THREE.Vector3(10.75, 3, -2);
-    }, []);
-
-    const planeProps = useMemo(() => {
-      return {
-        floor: {
-          args: [23, 14] as [number, number],
-          position: new THREE.Vector3(0, -4, -2),
-          rotation: new THREE.Euler(-Math.PI / 2, 0, 0),
-        },
-        ceiling: {
-          args: [20, 14] as [number, number],
-          position: new THREE.Vector3(0, 10, -2),
-          rotation: new THREE.Euler(Math.PI / 2, 0, 0),
-        },
-        rightWall: {
-          args: [14, 14] as [number, number],
-          position: new THREE.Vector3(-10, 3, -2),
-          rotation: new THREE.Euler(0, Math.PI / 2, 0),
-        },
-        backWall: {
-          args: [23, 14] as [number, number],
-          position: new THREE.Vector3(0, 3, -9),
-          rotation: new THREE.Euler(0, 0, 0),
-        },
-        frontWall: {
-          args: [20, 14] as [number, number],
-          position: new THREE.Vector3(0, 3, 5),
-          rotation: new THREE.Euler(Math.PI, 0, 0),
-        },
-      };
-    }, []);
-
-    const tableLegProps = useMemo(() => {
-      return {
-        fr: {
-          args: [1, 0.5, 1.12] as [number, number, number],
-          position: new THREE.Vector3(3.5, -3.5, -0.5),
-        },
-        fl: {
-          args: [1, 0.5, 1.12] as [number, number, number],
-          position: new THREE.Vector3(-3.5, -3.5, -0.5),
-        },
-        br: {
-          args: [1, 0.5, 1.12] as [number, number, number],
-          position: new THREE.Vector3(3.5, -3.5, -4.5),
-        },
-        bl: {
-          args: [1, 0.5, 1.12] as [number, number, number],
-          position: new THREE.Vector3(-3.5, -3.5, -4.5),
-        },
-      };
-    }, []);
 
     const glassCase: {
       position: {
@@ -210,7 +139,16 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
       }));
     }, []);
 
-    const { shootPosition, shootDirection, bandPosition } = useMemo(() => {
+    const {
+      shootPosition,
+      shootDirection,
+      bandPosition,
+      epoxyMaterial,
+      decalBallMaterial,
+      blindsStartPosition,
+      planeProps,
+      tableLegProps,
+    } = useMemo(() => {
       return {
         shootPosition: new THREE.Vector3(0, 10, 0),
         shootDirection: new THREE.Vector3(
@@ -218,26 +156,83 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
           -40,
           randFloatSpread(10)
         ),
-        bandPosition: new THREE.Vector3(GOLDENRATIO * -3, 1.5, GOLDENRATIO),
+        bandPosition: new THREE.Vector3(GOLDENRATIO * 3, 1.5, GOLDENRATIO),
+        epoxyMaterial: new THREE.MeshPhysicalMaterial({
+          transmission: 0.95,
+          roughness: 0.35,
+          thickness: 15,
+          ior: 1.05,
+          clearcoat: 1,
+          attenuationDistance: 1,
+          attenuationColor: "white",
+          color: "white",
+        }),
+        decalBallMaterial: new THREE.MeshStandardMaterial({ color: "navy" }),
+        blindsStartPosition: new THREE.Vector3(10.75, 3, -2),
+        planeProps: {
+          floor: {
+            args: [23, 14] as [number, number],
+            position: new THREE.Vector3(0, -4, -2),
+            rotation: new THREE.Euler(-Math.PI / 2, 0, 0),
+          },
+          ceiling: {
+            args: [20, 14] as [number, number],
+            position: new THREE.Vector3(0, 10, -2),
+            rotation: new THREE.Euler(Math.PI / 2, 0, 0),
+          },
+          rightWall: {
+            args: [14, 14] as [number, number],
+            position: new THREE.Vector3(-10, 3, -2),
+            rotation: new THREE.Euler(0, Math.PI / 2, 0),
+          },
+          backWall: {
+            args: [23, 14] as [number, number],
+            position: new THREE.Vector3(0, 3, -9),
+            rotation: new THREE.Euler(0, 0, 0),
+          },
+          frontWall: {
+            args: [20, 14] as [number, number],
+            position: new THREE.Vector3(0, 3, 5),
+            rotation: new THREE.Euler(Math.PI, 0, 0),
+          },
+        },
+        tableLegProps: {
+          fr: {
+            args: [1, 0.5, 1.12] as [number, number, number],
+            position: new THREE.Vector3(3.5, -3.5, -0.5),
+          },
+          fl: {
+            args: [1, 0.5, 1.12] as [number, number, number],
+            position: new THREE.Vector3(-3.5, -3.5, -0.5),
+          },
+          br: {
+            args: [1, 0.5, 1.12] as [number, number, number],
+            position: new THREE.Vector3(3.5, -3.5, -4.5),
+          },
+          bl: {
+            args: [1, 0.5, 1.12] as [number, number, number],
+            position: new THREE.Vector3(-3.5, -3.5, -4.5),
+          },
+        },
       };
     }, []);
 
-    const [location] = useLocation();
+    const [location, setLocation] = useLocation();
     const [animate, setAnimate] = useState(false);
     const [meshes, setMeshes] = useState<THREE.Mesh[]>(() => defaultGlass);
     const [displayText, setDisplayText] = useState(text[0]);
-
     const ballsRBRef = useRef<RapierRigidBody[]>([]);
     const blindsRef = useRef<THREE.Mesh>(null);
-
+    const innerRef = useRef<THREE.Group>(null);
     const { camera } = useThree();
-    const resetDelay = 400;
+    useImperativeHandle(outerRef, () => innerRef.current!);
 
     // reset scene upon location change
     useEffect(() => {
       let timer: NodeJS.Timeout;
       if (location !== "/about") {
         timer = setTimeout(() => {
+          innerRef.current!.visible = false;
           setMeshes(defaultGlass);
           setAnimate(false);
           setDisplayText(text[0]);
@@ -247,6 +242,8 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
             e.setBodyType(1, true);
           });
         }, resetDelay);
+      } else {
+        innerRef.current!.visible = true;
       }
 
       return () => clearTimeout(timer);
@@ -266,24 +263,42 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
           5,
           delta
         );
+        invalidate();
       }
     });
 
     return (
-      <group ref={ref} {...props}>
-        <OrbitControls/>
+      <group ref={innerRef} {...props}>
         <Html
           position={[-5 * GOLDENRATIO, GOLDENRATIO * 1.25, 0]}
           style={{ width: "40rem", pointerEvents: "none" }}
         >
-          {location === "/about" && <Trail active={location === "/about"} trigger={animate}>
-            <span className={`${css.trailsTextHeader} ${css.trailsText}`}>
-              {displayText.header}
-            </span>
-            <span className={`${css.trailsTextBody} ${css.trailsText}`}>
-              {displayText.body}
-            </span>
-          </Trail>}
+          {location === "/about" && (
+            <Trail active={location === "/about"} trigger={animate}>
+              <span className={`${css.trailsTextHeader} ${css.trailsText}`}>
+                {displayText.header}
+              </span>
+              <span className={`${css.trailsTextBody} ${css.trailsText}`}>
+                {displayText.body}
+              </span>
+            </Trail>
+          )}
+        </Html>
+
+        <Html position={[-6 * GOLDENRATIO, GOLDENRATIO * 2.5, 0]}>
+          {location === "/about" && (
+            <Trail active={location === "/about"}>
+              <a
+                className={`${css.trailsBackBtn}`}
+                style={{ color: "white", fontSize: "2rem", cursor: "pointer" }}
+                onClick={() => {
+                  setLocation("/menu");
+                }}
+              >
+                {"<"} back
+              </a>
+            </Trail>
+          )}
         </Html>
 
         <Physics gravity={[0, -10, 0]}>
@@ -339,8 +354,6 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
             );
           })}
 
-          <Pointer size={[0.5, 0.1, collisionBoxSize.z]} activate={animate} />
-
           {decals.map((decal, i) => {
             return (
               <Shoot
@@ -365,6 +378,8 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
               </Shoot>
             );
           })}
+
+          <Pointer size={[0.5, 0.1, collisionBoxSize.z]} activate={animate} />
 
           <Misc castShadow scale={0.2} position={[0, -2, 0]} />
 

@@ -4,7 +4,7 @@ import { useRef } from "react";
 import * as THREE from "three";
 import { GOLDENRATIO } from "../../types";
 
-export function DriftingText({ ...props }) {
+export function DriftingText({ color = "black", ...props }) {
   const texts = ["Hello", "Michael Shao", "Software developer"];
   type CharInfo = {
     char: THREE.Object3D;
@@ -78,7 +78,7 @@ export function DriftingText({ ...props }) {
     return Array.from(text).map((char, index) => (
       <Text
         key={index}
-        color={"gray"}
+        color={color}
         ref={(e) => {
           if (e) {
             const material = new THREE.MeshBasicMaterial({

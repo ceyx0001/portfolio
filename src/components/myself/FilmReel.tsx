@@ -3,6 +3,8 @@ import { RapierRigidBody, RigidBody } from "@react-three/rapier";
 import { forwardRef, useImperativeHandle, useRef } from "react";
 import { Mesh } from "three";
 
+useGLTF.preload("/models/filmreel.glb");
+
 export const FilmReel = forwardRef(({ ...props }, outerRef) => {
   const { nodes, materials } = useGLTF("/models/filmreel.glb");
   const innerRef = useRef<RapierRigidBody>(null);
@@ -45,5 +47,3 @@ export const FilmReel = forwardRef(({ ...props }, outerRef) => {
     </RigidBody>
   );
 });
-
-useGLTF.preload("/filmreel.glb");

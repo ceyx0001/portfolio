@@ -13,6 +13,11 @@ import { useLocation } from "wouter";
 import { RigidBodyGroup } from "../types";
 import { GroupProps } from "@react-three/fiber";
 
+useGLTF.preload("/models/volleyball.glb");
+useGLTF.preload("/models/staff.glb");
+useGLTF.preload("/models/pokeball.glb");
+useGLTF.preload("/models/leaf.glb");
+
 export const Misc = ({ ...props }: GroupProps) => {
   const { nodes: leafNode } = useGLTF("/models/leaf.glb");
   const { nodes: pokeballNode, materials: pokeballMat } = useGLTF(
@@ -202,8 +207,3 @@ export const Misc = ({ ...props }: GroupProps) => {
     </group>
   );
 };
-
-useGLTF.preload("/models/volleyball.glb");
-useGLTF.preload("/models/staff.glb");
-useGLTF.preload("/models/pokeball.glb");
-useGLTF.preload("/models/leaf.glb");
