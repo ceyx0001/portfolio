@@ -25,7 +25,8 @@
     "three-custom-shader-material": "^5.4.0",
     "three-extend-material": "^1.0.0",
     "three-stdlib": "^2.33.0",
-    "wouter": "^3.3.5"
+    "wouter": "^3.3.5",
+    "zustand": "^5.0.0"
   },
   "devDependencies": {
     "@types/lodash": "^4.17.7",

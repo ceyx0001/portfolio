@@ -167,7 +167,13 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
           attenuationColor: "white",
           color: "white",
         }),
-        decalBallMaterial: new THREE.MeshStandardMaterial({ color: "navy" }),
+        decalBallMaterial: new THREE.MeshPhysicalMaterial({
+          color: "orange",
+          transmission: 1,
+          thickness: 3,
+          ior: 1.05,
+          clearcoat: 1,
+        }),
         blindsStartPosition: new THREE.Vector3(10.75, 3, -2),
         planeProps: {
           floor: {
@@ -270,14 +276,42 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
     return (
       <group ref={innerRef} {...props}>
         <Html
-          position={[-5 * GOLDENRATIO, GOLDENRATIO * 1.25, 0]}
-          style={{ width: "40rem", pointerEvents: "none" }}
+          position={[-5 * GOLDENRATIO, GOLDENRATIO * 2.375, 0]}
+          style={{
+            width: "40rem",
+            pointerEvents: "none",
+          }}
         >
           {location === "/about" && (
-            <Trail active={location === "/about"} trigger={animate}>
+            <Trail
+              active={location === "/about"}
+              trigger={animate}
+              vertical={false}
+              startPos={300}
+              endPos={0}
+            >
               <span className={`${css.trailsTextHeader} ${css.trailsText}`}>
                 {displayText.header}
               </span>
+            </Trail>
+          )}
+        </Html>
+
+        <Html
+          position={[-7.5 * GOLDENRATIO, GOLDENRATIO * -3, 0]}
+          style={{
+            width: "60rem",
+            pointerEvents: "none",
+          }}
+        >
+          {location === "/about" && (
+            <Trail
+              active={location === "/about"}
+              trigger={animate}
+              vertical={false}
+              startPos={300}
+              endPos={0}
+            >
               <span className={`${css.trailsTextBody} ${css.trailsText}`}>
                 {displayText.body}
               </span>
@@ -287,7 +321,7 @@ export const AboutScene = forwardRef<THREE.Group, GroupProps>(
 
         <Html position={[-6 * GOLDENRATIO, GOLDENRATIO * 2.5, 0]}>
           {location === "/about" && (
-            <Trail active={location === "/about"}>
+            <Trail active={location === "/about"} startPos={175} endPos={0}>
               <a
                 className={`${css.trailsBackBtn}`}
                 style={{ color: "white", fontSize: "2rem", cursor: "pointer" }}
