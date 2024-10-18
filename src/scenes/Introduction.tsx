@@ -1,8 +1,7 @@
 import { GroupProps, useFrame } from "@react-three/fiber";
-import { forwardRef, useMemo, useRef, useState } from "react";
+import { forwardRef, useMemo, useRef } from "react";
 import { Portal } from "../components/effects/Portal";
 import { Menu } from "./Menu";
-import { OrbState } from "../types";
 import { DriftingText } from "../components/effects/DriftingText";
 import { useLocation } from "wouter";
 import * as THREE from "three";
@@ -18,8 +17,7 @@ useGLTF.preload("/models/city.glb");
 
 export const IntroductionScene = forwardRef<THREE.Group, GroupProps>(
   (_, ref) => {
-    const [, setLocation] = useLocation();
-    const [orbState, setOrbState] = useState(OrbState.UNENTERED);
+    const [location, setLocation] = useLocation();
     const { portalPosition, portalGeometry } = useMemo(() => {
       return {
         portalPosition: new THREE.Vector3(0, 0, -3),
@@ -81,17 +79,13 @@ export const IntroductionScene = forwardRef<THREE.Group, GroupProps>(
           geometry={portalGeometry}
           position={portalPosition}
           onClick={() => {
-            setOrbState(OrbState.ENTERED);
             setLocation("/menu");
           }}
-          onFinish={() => {
-            setOrbState(OrbState.FLOATING);
-            portalPosition.set(0, 0, 0);
-          }}
+          path={"/menu"}
         >
-          <Menu orbState={orbState} setOrbState={setOrbState} />
+          <Menu />
         </Portal>
-        <DriftingText color="BurlyWood" visible={orbState === OrbState.UNENTERED} />
+        {location === "/" && <DriftingText color="BurlyWood" />}
       </group>
     );
   }

@@ -1,63 +1,57 @@
-import {
-  useEffect,
-  useRef,
-  useImperativeHandle,
-  useState,
-  forwardRef,
-} from "react";
+import { useRef, useImperativeHandle, useState, forwardRef } from "react";
 import { MeshProps, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { MeshPortalMaterial, Outlines } from "@react-three/drei";
+import { MeshPortalMaterial, Outlines, useCursor } from "@react-three/drei";
 import { easing } from "maath";
-import { MouseStates } from "../../types";
+import { useRoute } from "wouter";
 
 type PortalProps = {
-  geometry: THREE.BufferGeometry;
-  position: THREE.Vector3;
-  children?: React.ReactNode;
   onClick: () => void;
-  onFinish: () => void;
+  onFinish?: () => void;
+  geometry: THREE.BufferGeometry;
+  path: string;
+  position: THREE.Vector3;
 } & MeshProps;
 
 export const Portal = forwardRef<THREE.Mesh, PortalProps>(
   (
-    { geometry, position, children, onClick, onFinish, ...props },
+    { geometry, position, children, onClick, onFinish, path, ...props },
     outerMeshRef
   ) => {
-    const [mouseState, setMouseState] = useState(MouseStates.NEUTRAL);
+    const [match] = useRoute(`${path}/*?`);
+    const [hover, setHover] = useState(false);
+    useCursor(hover);
     const innerMeshRef = useRef<THREE.Mesh>(null);
     const portalRef = useRef(null);
-    const origin = new THREE.Vector3(0, 0, 0);
 
     useImperativeHandle(outerMeshRef, () => innerMeshRef.current!, []);
 
-    useEffect(() => {
-      document.body.style.cursor =
-        mouseState === MouseStates.HOVERED ? "pointer" : "auto";
-    }, [mouseState]);
-
     useFrame((_state, delta) => {
-      if (
-        innerMeshRef.current === null ||
-        portalRef.current === null ||
-        mouseState === MouseStates.FINISHED
-      ) {
+      if (innerMeshRef.current === null || portalRef.current === null) {
         return;
       }
-      if (mouseState === MouseStates.CLICKED) {
-        const runningBlend = easing.damp(
-          portalRef.current,
-          "blend",
-          1,
-          0.3,
-          delta
-        );
 
-        easing.damp3(innerMeshRef.current.position, origin, 0.3, delta);
+      const runningBlend = easing.damp(
+        portalRef.current,
+        "blend",
+        match ? 1 : 0,
+        0.3,
+        delta
+      );
+      easing.damp3(
+        innerMeshRef.current.position,
+        match ? [0, 0, 0] : position,
+        0.3,
+        delta
+      );
 
-        if (!runningBlend && innerMeshRef.current.rotation.y === 0) {
+      if (match) {
+        if (
+          !runningBlend &&
+          innerMeshRef.current.rotation.y === 0 &&
+          onFinish
+        ) {
           onFinish();
-          setMouseState(MouseStates.FINISHED);
         }
       }
     });
@@ -68,43 +62,26 @@ export const Portal = forwardRef<THREE.Mesh, PortalProps>(
         geometry={geometry}
         position={position}
         {...props}
-        onPointerOver={(e) => {
+        onClick={(e) => {
           e.stopPropagation();
-          if (
-            mouseState === MouseStates.CLICKED ||
-            mouseState === MouseStates.FINISHED
-          ) {
-            return;
+          setHover(false);
+          onClick();
+        }}
+        onPointerOver={() => {
+          if (!match) {
+            setHover(true);
           }
-          setMouseState(MouseStates.HOVERED);
         }}
         onPointerOut={() => {
-          if (
-            mouseState === MouseStates.CLICKED ||
-            mouseState === MouseStates.FINISHED
-          ) {
-            return;
+          if (!match) {
+            setHover(false);
           }
-          setMouseState(MouseStates.NEUTRAL);
-        }}
-        onClick={(e) => {
-          if (
-            mouseState === MouseStates.CLICKED ||
-            mouseState === MouseStates.FINISHED
-          ) {
-            return;
-          }
-          e.stopPropagation();
-          onClick();
-          setMouseState(MouseStates.CLICKED);
         }}
       >
-        <MeshPortalMaterial ref={portalRef}>{children}</MeshPortalMaterial>
-        <Outlines
-          visible={mouseState === MouseStates.HOVERED}
-          thickness={1}
-          color="#fba56a"
-        />
+        <MeshPortalMaterial ref={portalRef} events={match}>
+          {children}
+        </MeshPortalMaterial>
+        <Outlines visible={hover} thickness={1} color="#fba56a" />
       </mesh>
     );
   }

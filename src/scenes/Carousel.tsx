@@ -12,7 +12,6 @@ import { useRef, useState } from "react";
 import { create } from "zustand";
 import * as THREE from "three";
 import { useShallow } from "zustand/shallow";
-
 type CarouselState = {
   clicked: number | null;
   urls: string[];
@@ -21,9 +20,7 @@ type CarouselState = {
 
 const useCarouselStore = create<CarouselState>((set) => ({
   clicked: null,
-  urls: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 5, 7, 8, 2, 4, 9, 6].map(
-    (u) => `/test/${u}.jpg`
-  ),
+  urls: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((u) => `/test/${u}.jpg`),
   setClicked: (clicked) => set({ clicked }),
 }));
 
@@ -50,6 +47,7 @@ type ItemProps = {
   index: number;
   position: number[];
   scale: [number, number];
+  path: string;
 } & ImageProps;
 
 function Item({ index, position, scale, ...props }: ItemProps) {
@@ -68,6 +66,7 @@ function Item({ index, position, scale, ...props }: ItemProps) {
   };
   const over = () => hover(true);
   const out = () => hover(false);
+
   useFrame((_, delta) => {
     if (!ref.current?.material) {
       return;
@@ -76,12 +75,23 @@ function Item({ index, position, scale, ...props }: ItemProps) {
       index / urls.length - 1.5 / urls.length,
       4 / urls.length
     );
-    easing.damp3(
-      ref.current.scale,
-      [clicked === index ? 4.7 : scale[0], clicked === index ? 5 : 4 + y, 1],
-      0.15,
-      delta
-    );
+
+    if (
+      (scroll.offset >= 0 && scroll.offset < 0.96) ||
+      scroll.offset === 1 ||
+      scroll.offset === 0
+    ) {
+      easing.damp3(
+        ref.current.scale,
+        [clicked === index ? 4.7 : scale[0], clicked === index ? 5 : 4 + y, 1],
+        0.15,
+        delta
+      );
+    } else {
+      ref.current.scale.x = clicked === index ? 4.7 : scale[0];
+      ref.current.scale.y = clicked === index ? 5 : 4 + y;
+    }
+
     const mat = ref.current.material as ImageMaterialType;
     if (mat.scale) {
       mat.scale.x = ref.current.scale.x;
@@ -109,6 +119,7 @@ function Item({ index, position, scale, ...props }: ItemProps) {
       );
     }
   });
+
   return (
     <Image
       ref={ref}
@@ -122,21 +133,75 @@ function Item({ index, position, scale, ...props }: ItemProps) {
   );
 }
 
-function Items({ w = 0.7, gap = 0.15 }) {
+function Items({ w = 2, gap = 0.15, extension = 6 }) {
+  const urls = useCarouselStore((state) => state.urls);
+  const append = urls.slice(0, extension - 1);
+  const prepend = urls.slice(urls.length - extension, urls.length);
+  const { width } = useThree((state) => state.viewport);
+  const xW = w + gap;
+
+  return (
+    <ScrollControls
+      infinite
+      horizontal
+      damping={0.1}
+      pages={(width - xW + 2 + urls.length * xW) / width}
+      style={{ overflow: "hidden" }}
+    >
+      <Progress />
+      <Scroll>
+        {prepend.map((url, i) => (
+          <Item
+            path={`/projects/${extension + i}`}
+            key={"carousel-item-prepend-" + i}
+            index={i - extension}
+            position={[i * xW - extension * xW, 0, 0]}
+            scale={[w, 4]}
+            url={url}
+          />
+        ))}
+        {urls.map((url, i) => (
+          <Item
+            path={`/projects/${i}`}
+            key={"carousel-item-" + i}
+            index={i}
+            position={[i * xW, 0, 0]}
+            scale={[w, 4]}
+            url={url}
+          />
+        ))}
+        {append.map((url, i) => (
+          <Item
+            path={`/projects/${i}`}
+            key={"carousel-item-append-" + i}
+            index={urls.length + i}
+            position={[(i + urls.length) * xW, 0, 0]}
+            scale={[w, 4]}
+            url={url}
+          />
+        ))}
+      </Scroll>
+    </ScrollControls>
+  );
+}
+
+/*function Items({ w = 1.5, gap = 0.15 }) {
   const urls = useCarouselStore((state) => state.urls);
   const { width } = useThree((state) => state.viewport);
   const xW = w + gap;
+
   return (
     <ScrollControls
+      infinite
       horizontal
       damping={0.1}
       pages={(width - xW + urls.length * xW) / width}
     >
-      <Minimap />
+      <Progress />
       <Scroll>
         {urls.map((url, i) => (
           <Item
-            key={i}
+            key={"carousel-item-" + i}
             index={i}
             position={[i * xW, 0, 0]}
             scale={[w, 4]}
@@ -147,8 +212,9 @@ function Items({ w = 0.7, gap = 0.15 }) {
     </ScrollControls>
   );
 }
+ */
 
-function Minimap() {
+function Progress() {
   const ref = useRef<THREE.Group>(null);
   const scroll = useScroll();
   const urls = useCarouselStore((state) => state.urls);
