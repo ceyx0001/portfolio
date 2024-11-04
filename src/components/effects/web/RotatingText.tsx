@@ -9,11 +9,11 @@ export const RotatingText = ({
   delay?: number;
   children: string;
 } & React.HTMLAttributes<HTMLSpanElement>) => {
-  const items = children.split("");
+  const items = children.split(/(\s+)/);
   const trails = useTrail(children.length, {
     from: { transform: "rotateY(90deg) scale(0.75)", opacity: 0 },
     to: { transform: "rotateY(0deg) scale(1)", opacity: 1 },
-    config: { tension: 5000, friction: 150, trail: 0},
+    config: { tension: 2500, friction: 150, trail: 0 },
     reset: true,
   });
 
@@ -21,12 +21,12 @@ export const RotatingText = ({
     <animated.span
       key={uuidv4()}
       style={{
+        ...style,
         ...springStyle,
         position: "relative",
         display: "inline-block",
         transformOrigin: "bottom",
         whiteSpace: "pre-wrap",
-        ...style,
       }}
       {...props}
     >

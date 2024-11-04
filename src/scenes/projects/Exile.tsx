@@ -1,5 +1,6 @@
 import { Scroll, ScrollControls } from "@react-three/drei";
-import { RotatingText } from "../../components/effects/RotatingText";
+import { RotatingText } from "../../components/effects/web/RotatingText";
+import { SlideInText } from "../../components/effects/web/SlideInText";
 import { Suspense, useEffect, useRef } from "react";
 import * as THREE from "three";
 import css from "../../styles.module.css";
@@ -25,7 +26,7 @@ const HtmlElements = () => {
         src={"/projects/exile/mirror.svg"}
       />
       <div
-        style={{ top: "20vh", left: leftAnchor, width: "42rem" }}
+        style={{ top: "28vh", left: leftAnchor, width: "42rem" }}
         className={`${css.projectText}`}
       >
         <div style={{ display: "flex", flexDirection: "column" }}>
@@ -40,7 +41,9 @@ const HtmlElements = () => {
             </RotatingText>
           </span>
         </div>
-        <h2>Less hassle. More play.</h2>
+        <h3>
+          <SlideInText>Less hassle. More play.</SlideInText>
+        </h3>
         <p>
           A trading platform made for the Path of Exile community that
           consolidates player inventories from legacy forum threads, making it
