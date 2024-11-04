@@ -10,12 +10,20 @@ type PortalProps = {
   onFinish?: () => void;
   geometry: THREE.BufferGeometry;
   path: string;
-  position: THREE.Vector3;
+  position?: THREE.Vector3 | [number, number, number];
 } & MeshProps;
 
 export const Portal = forwardRef<THREE.Mesh, PortalProps>(
   (
-    { geometry, position, children, onClick, onFinish, path, ...props },
+    {
+      geometry,
+      position = [0, 0, 0],
+      children,
+      onClick,
+      onFinish,
+      path,
+      ...props
+    },
     outerMeshRef
   ) => {
     const [match] = useRoute(`${path}/*?`);

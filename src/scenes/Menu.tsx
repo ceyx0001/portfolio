@@ -9,11 +9,9 @@ import { OrbState } from "../types";
 import { Orb } from "../components/Orb";
 import { useLocation } from "wouter";
 import { forwardRef, useEffect, useMemo, useState } from "react";
-import { extend, GroupProps, useThree } from "@react-three/fiber";
+import { GroupProps, useThree } from "@react-three/fiber";
 import { AboutScene } from "./About";
-import { TransitionMaterial } from "../shaders/TransitionMaterial";
 import { useSpring } from "@react-spring/three";
-extend({ TransitionMaterial });
 
 export const Menu = forwardRef<THREE.Group, GroupProps>(({ ...props }, ref) => {
   const [orbState, setOrbState] = useState(OrbState.UNENTERED);
