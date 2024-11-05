@@ -1,6 +1,7 @@
 import { Scroll, ScrollControls } from "@react-three/drei";
+import { v4 as uuidv4 } from "uuid";
 import { RotatingText } from "../../components/effects/web/RotatingText";
-import { SlideInText } from "../../components/effects/web/SlideInText";
+import { SlideIn } from "../../components/effects/web/SlideIn";
 import { Suspense, useEffect, useRef } from "react";
 import * as THREE from "three";
 import css from "../../styles.module.css";
@@ -12,6 +13,7 @@ extend({ WaveMaterial });
 
 const HtmlElements = () => {
   const leftAnchor = "8vw";
+  const config = { start: "translateY(200px)", end: "translateY(0px)" };
 
   return (
     <>
@@ -26,7 +28,7 @@ const HtmlElements = () => {
         src={"/projects/exile/mirror.svg"}
       />
       <div
-        style={{ top: "28vh", left: leftAnchor, width: "42rem" }}
+        style={{ top: "28vh", left: leftAnchor, width: "36rem" }}
         className={`${css.projectText}`}
       >
         <div style={{ display: "flex", flexDirection: "column" }}>
@@ -41,15 +43,19 @@ const HtmlElements = () => {
             </RotatingText>
           </span>
         </div>
-        <h3>
-          <SlideInText>Less hassle. More play.</SlideInText>
-        </h3>
-        <p>
-          A trading platform made for the Path of Exile community that
-          consolidates player inventories from legacy forum threads, making it
-          faster and more intuitive for players to buy, sell, and trade their
-          items.
-        </p>
+        <h2>
+          <SlideIn {...config}>
+            <span>Less hassle. More play.</span>
+          </SlideIn>
+        </h2>
+        <SlideIn {...config}>
+          <span>
+            A trading platform made for the Path of Exile community that
+            consolidates player inventories from legacy forum threads, making it
+            faster and more intuitive for players to buy, sell, and trade their
+            items.
+          </span>
+        </SlideIn>
       </div>
 
       <div
@@ -61,7 +67,9 @@ const HtmlElements = () => {
         }}
         className={`${css.projectText}`}
       >
-        <h2>Stack</h2>
+        <h2>
+          <SlideIn {...config}>Stack</SlideIn>
+        </h2>
         <ul
           style={{
             display: "flex",
@@ -69,12 +77,18 @@ const HtmlElements = () => {
             alignItems: "center",
           }}
         >
-          <li>React</li>
-          <li>Tailwind</li>
-          <li>TypeScript</li>
-          <li>Express</li>
-          <li>PostgreSQL</li>
-          <li>Vercel</li>
+          {[
+            "React",
+            "Tailwind",
+            "TypeScript",
+            "Express",
+            "PostgreSQL",
+            "Vercel",
+          ].map((item) => (
+            <SlideIn key={uuidv4()} {...config}>
+              <li>{item}</li>
+            </SlideIn>
+          ))}
         </ul>
       </div>
 
@@ -88,30 +102,32 @@ const HtmlElements = () => {
         }}
         className={`${css.projectText}`}
       >
-        <div>
-          <h3>Data aggregation</h3>
-          <p>
-            The app uses data scraping techniques to extract and analyze
-            information from game forums, enabling the cataloging of
-            comprehensive and accurate results.
-          </p>
-        </div>
+        <SlideIn {...config}>
+          <div>
+            <h3>Data aggregation</h3>
+            <p>
+              The app uses data scraping techniques to extract and analyze
+              information from game forums, enabling the cataloging of
+              comprehensive and accurate results.
+            </p>
+          </div>
 
-        <div>
-          <h3>Searching</h3>
-          <p>
-            With the powerful search feature, users can easily and quickly find
-            items with advanced based on item type, affixes, and more.
-          </p>
-        </div>
+          <div>
+            <h3>Searching</h3>
+            <p>
+              With the powerful search feature, users can easily and quickly
+              find items with advanced based on item type, affixes, and more.
+            </p>
+          </div>
 
-        <div>
-          <h3>Design</h3>
-          <p>
-            From elegant hover effects and smooth animations to seamless
-            navigation, for a simple yet effective experience.
-          </p>
-        </div>
+          <div>
+            <h3>Design</h3>
+            <p>
+              From elegant hover effects and smooth animations to seamless
+              navigation, for a simple yet effective experience.
+            </p>
+          </div>
+        </SlideIn>
       </div>
 
       <div
@@ -125,25 +141,27 @@ const HtmlElements = () => {
         }}
         className={`${css.projectText}`}
       >
-        <div>
-          <h3>Integration.</h3>
-          <p>
-            By leveraging in-game data, the app seamlessly integrate with
-            third-party tools like Path of Building while also enabling players
-            to easily trade in-game and alerting item owners.
-          </p>
-        </div>
-        <div>
-          <h1>
-            <a
-              href="https://mirror-service-catalog.vercel.app/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Visit
-            </a>
-          </h1>
-        </div>
+        <SlideIn {...config}>
+          <div>
+            <h3>Integration.</h3>
+            <p>
+              By leveraging in-game data, the app seamlessly integrate with
+              third-party tools like Path of Building while also enabling
+              players to easily trade in-game and alerting item owners.
+            </p>
+          </div>
+          <div>
+            <h1>
+              <a
+                href="https://mirror-service-catalog.vercel.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Visit
+              </a>
+            </h1>
+          </div>
+        </SlideIn>
       </div>
     </>
   );

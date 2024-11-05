@@ -1,17 +1,17 @@
-import * as THREE from "three";
+import { ShaderMaterial, Vector2 } from "three";
 import { extend, Object3DNode } from "@react-three/fiber";
 import { shaderMaterial } from "@react-three/drei";
 
 export type WaveMaterialProps = {
   uTime: number;
-  uRes: THREE.Vector2;
-} & THREE.ShaderMaterial;
+  uRes: Vector2;
+} & ShaderMaterial;
 
 // modified shader from: https://www.shadertoy.com/view/4t3GWX
-const WaveMaterial = shaderMaterial(
+export const WaveMaterial = shaderMaterial(
   {
     uTime: 0,
-    uRes: new THREE.Vector2(),
+    uRes: new Vector2(),
   },
   /*glsl*/ `
     varying vec2 vUv;
@@ -61,5 +61,3 @@ declare module "@react-three/fiber" {
     waveMaterial: Object3DNode<WaveMaterialProps, typeof WaveMaterial>;
   }
 }
-
-export { WaveMaterial };

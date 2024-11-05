@@ -32,7 +32,7 @@ import {
 import { GOLDENRATIO } from "../types";
 import { Physics, RapierRigidBody, RigidBody } from "@react-three/rapier";
 import { ConvexObjectBreaker } from "three-stdlib";
-import { Trail } from "../components/effects/Trail";
+import { Trail } from "../components/effects/web/Trail";
 import { Break } from "../components/effects/Break";
 import { Shoot } from "../components/effects/Shoot";
 import { CollisionBox } from "../components/CollisionBox";

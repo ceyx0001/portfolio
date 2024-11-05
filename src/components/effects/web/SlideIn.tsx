@@ -1,27 +1,31 @@
+import React, { useEffect, useRef } from "react";
 import { animated, useSpringRef, useTrail } from "@react-spring/web";
-import { useEffect, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 
-export type RotatingTextProps = {
+export type SlideInProps = {
+  start: string;
+  end: string;
   delay?: number;
-  children: string;
-} & Omit<React.HTMLAttributes<HTMLDivElement>, "children">;
+} & React.HTMLAttributes<HTMLDivElement>;
 
-export const RotatingText = ({
-  style,
+export const SlideIn = ({
   children,
+  start,
+  end,
   delay = 0,
+  style,
   ...props
-}: RotatingTextProps) => {
-  const items = children.split(/(\s+)/);
+}: SlideInProps) => {
+  const items = React.Children.toArray(children);
   const api = useSpringRef();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const trail = useTrail(items.length, {
     ref: api,
-    from: { transform: "rotateY(90deg) scale(0.75)", opacity: 0 },
-    to: { transform: "rotateY(0deg) scale(1)", opacity: 1 },
-    config: { tension: 1000, friction: 150 },
+    from: { opacity: 0, transform: start },
+    to: { opacity: 1, transform: end },
+    config: { tension: 400, friction: 100 },
+    immediate: false,
     delay: delay,
   });
 
@@ -41,16 +45,14 @@ export const RotatingText = ({
   }, [api]);
 
   return (
-    <div ref={containerRef} style={{ display: "inline-block", ...style }} {...props}>
+    <div ref={containerRef} {...props} style={{ display: "inline-block", ...style }}>
       {trail.map((spring, i) => (
         <animated.span
           key={uuidv4()}
           style={{
             ...spring,
-            position: "relative",
-            display: "inline-block",
-            transformOrigin: "bottom",
             whiteSpace: "pre-wrap",
+            display: "inline-block",
           }}
         >
           {items[i]}
