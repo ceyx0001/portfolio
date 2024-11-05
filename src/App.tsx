@@ -1,5 +1,5 @@
 import { Canvas } from "@react-three/fiber";
-import { Exile } from "./scenes/projects/Exile";
+import { IntroductionScene } from "./scenes/Introduction";
 export default function App() {
   return (
     <div style={{ height: "100vh" }}>
@@ -7,7 +7,7 @@ export default function App() {
         shadows
         onCreated={(state) => (state.gl.localClippingEnabled = true)}
       >
-        <Exile />
+        <IntroductionScene />
       </Canvas>
     </div>
   );
