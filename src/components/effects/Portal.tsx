@@ -43,13 +43,13 @@ export const Portal = forwardRef<THREE.Mesh, PortalProps>(
         portalRef.current,
         "blend",
         match ? 1 : 0,
-        0.3,
+        0.2,
         delta
       );
       easing.damp3(
         innerMeshRef.current.position,
         match ? [0, 0, 0] : position,
-        0.3,
+        0.2,
         delta
       );
 

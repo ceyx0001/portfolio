@@ -156,6 +156,7 @@ const HtmlElements = () => {
                 href="https://mirror-service-catalog.vercel.app/"
                 target="_blank"
                 rel="noopener noreferrer"
+                className="aArrow"
               >
                 Visit
               </a>

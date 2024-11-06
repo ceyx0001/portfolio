@@ -1,16 +1,20 @@
 import { Text } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
-import { useCallback, useRef } from "react";
+import { GroupProps, useFrame } from "@react-three/fiber";
+import { MutableRefObject, useCallback, useRef } from "react";
 import * as THREE from "three";
 import { GOLDENRATIO } from "../../types";
 
-export function DriftingText({ color = "black", ...props }) {
+export function DriftingText({
+  color = "black",
+  ...props
+}: { color?: string } & GroupProps) {
   const texts = ["Hello", "Michael Shao", "Software developer"];
   type CharInfo = {
     char: THREE.Object3D;
     lerpFactor: number;
     material: THREE.MeshBasicMaterial;
   };
+  const complete = useRef(false);
   const dropTextRefs = useRef<CharInfo[]>([]);
   const riseTextRefs = useRef<CharInfo[]>([]);
   const slideTextRefs = useRef<CharInfo[]>([]);
@@ -21,47 +25,43 @@ export function DriftingText({ color = "black", ...props }) {
   const max = 0.02;
   const lerpThreshold = 0.001;
   const textPosition = [0, 0, 1];
+  const dropTargetY = 0.3 * GOLDENRATIO * 1.5;
+  const riseTargetY = -0.3 * GOLDENRATIO * 1.5;
 
-  useFrame(() => {
-    dropTextRefs.current.forEach((e: CharInfo) => {
-      const targetY = 0.3 * GOLDENRATIO * 1.5;
-      e.char.position.y = THREE.MathUtils.lerp(
-        e.char.position.y,
-        targetY,
-        e.lerpFactor
-      );
-      if (Math.abs(e.char.position.y - targetY) < lerpThreshold) {
-        e.char.position.y = targetY;
-      }
-      e.material.opacity = Math.min(e.material.opacity + 0.005, 1);
-    });
+  const updateTextPosition = useCallback(
+    (
+      refs: React.MutableRefObject<CharInfo[]>,
+      targetPosition: number | ((index: number) => number),
+      positionAxis: "x" | "y",
+      threshold: number,
+      opacityIncrement: number
+    ) => {
+      let allWithinThreshold = true;
 
-    riseTextRefs.current.forEach((e: CharInfo) => {
-      const targetY = -0.3 * GOLDENRATIO * 1.5;
-      e.char.position.y = THREE.MathUtils.lerp(
-        e.char.position.y,
-        targetY,
-        e.lerpFactor
-      );
-      if (Math.abs(e.char.position.y - targetY) < lerpThreshold) {
-        e.char.position.y = targetY;
-      }
-      e.material.opacity = Math.min(e.material.opacity + 0.005, 1);
-    });
+      refs.current.forEach((e: CharInfo, index: number) => {
+        const target =
+          typeof targetPosition === "function"
+            ? targetPosition(index)
+            : targetPosition;
+        e.char.position[positionAxis] = THREE.MathUtils.lerp(
+          e.char.position[positionAxis],
+          target,
+          e.lerpFactor
+        );
+        if (Math.abs(e.char.position[positionAxis] - target) < threshold) {
+          e.char.position[positionAxis] = target;
+        } else {
+          allWithinThreshold = false;
+        }
+        e.material.opacity = Math.min(e.material.opacity + opacityIncrement, 1);
+      });
 
-    slideTextRefs.current.forEach((e: CharInfo, index: number) => {
-      const targetX = index * 0.3 - GOLDENRATIO * 3;
-      e.char.position.x = THREE.MathUtils.lerp(
-        e.char.position.x,
-        targetX,
-        e.lerpFactor
-      );
-      if (Math.abs(e.char.position.x - targetX) < lerpThreshold) {
-        e.char.position.x = targetX;
+      if (allWithinThreshold) {
+        complete.current = true;
       }
-      e.material.opacity = Math.min(e.material.opacity + 0.005, 1);
-    });
-  });
+    },
+    []
+  );
 
   const separate = useCallback(
     (
@@ -103,12 +103,34 @@ export function DriftingText({ color = "black", ...props }) {
     [color]
   );
 
+  useFrame(() => {
+    if (complete.current) {
+      return;
+    }
+
+    updateTextPosition(dropTextRefs, dropTargetY, "y", lerpThreshold, 0.005);
+    updateTextPosition(riseTextRefs, riseTargetY, "y", lerpThreshold, 0.005);
+    updateTextPosition(
+      slideTextRefs,
+      (index) => index * 0.3 - GOLDENRATIO * 3,
+      "x",
+      lerpThreshold,
+      0.005
+    );
+  });
+
   return (
     <group position={textPosition as unknown as THREE.Vector3} {...props}>
       {texts.map((text, index) => {
-        let animationRef;
-        let startPositionY;
-        let startPositionX;
+        let animationRef: MutableRefObject<
+          {
+            char: THREE.Object3D;
+            lerpFactor: number;
+            material: THREE.MeshBasicMaterial;
+          }[]
+        >;
+        let startPositionY: number;
+        let startPositionX: number;
         switch (index) {
           case 0:
             animationRef = dropTextRefs;

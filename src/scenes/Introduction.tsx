@@ -29,14 +29,9 @@ export const IntroductionScene = forwardRef<THREE.Group, GroupProps>(
     const { nodes } = useGLTF("/models/city.glb");
     useFrame(() => (cityRef.current!.rotation.y += 0.0001));
 
-    useFrame(() => {
-      if (!portalRef.current) {
-        return;
-      }
-    });
-
     return (
       <group ref={ref}>
+        {location === "/" && <DriftingText color="BurlyWood" />}
         <group ref={cityRef} scale={0.001}>
           <group rotation={[-Math.PI / 2, 0, 0]} position={[0, -100, 0]}>
             <group position={[-175000, -200000, -17500]}>
@@ -45,28 +40,28 @@ export const IntroductionScene = forwardRef<THREE.Group, GroupProps>(
                 receiveShadow
                 geometry={(nodes.mesh_0 as THREE.Mesh).geometry}
               >
-                <meshPhongMaterial color={"darkred"} />
+                <meshStandardMaterial color={"darkred"} />
               </mesh>
               <mesh
                 castShadow
                 receiveShadow
                 geometry={(nodes.mesh_1 as THREE.Mesh).geometry}
               >
-                <meshPhongMaterial color={"brown"} />
+                <meshStandardMaterial color={"brown"} />
               </mesh>
               <mesh
                 castShadow
                 receiveShadow
                 geometry={(nodes.mesh_2 as THREE.Mesh).geometry}
               >
-                <meshPhongMaterial color={"firebrick"} />
+                <meshStandardMaterial color={"firebrick"} />
               </mesh>
               <mesh
                 castShadow
                 receiveShadow
                 geometry={(nodes.mesh_3 as THREE.Mesh).geometry}
               >
-                <meshPhongMaterial color={"#4a000f"} />
+                <meshStandardMaterial color={"#4a000f"} />
               </mesh>
             </group>
           </group>
@@ -85,7 +80,6 @@ export const IntroductionScene = forwardRef<THREE.Group, GroupProps>(
         >
           <Menu />
         </Portal>
-        {location === "/" && <DriftingText color="BurlyWood" />}
       </group>
     );
   }

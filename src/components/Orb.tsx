@@ -4,14 +4,12 @@ import { extendMaterial, CustomMaterial } from "three-extend-material";
 import { useGLTF } from "@react-three/drei";
 import { forwardRef, useImperativeHandle, useMemo, useRef } from "react";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
-import { OrbState } from "../types";
+import { useLocation } from "wouter";
 
 useGLTF.preload("/models/orb.glb");
 
-type OrbProps = {
+export type OrbProps = {
   animate?: boolean;
-  orbState: string;
-  setOrbState: React.Dispatch<React.SetStateAction<string>>;
   position?: THREE.Vector3;
   transitionDist?: number;
 } & MeshProps;
@@ -60,17 +58,14 @@ export const OrbMaterial = () => {
         transformed *= (1.0 - locProg);
         transformed += aCenter;
         
-        // Rotate around the z-axis for horizontal rotation
         transformed = rotate(transformed, vec3(0.0, 1.0, 0.0), -aRand * locProg);
         
         float angle = locProg * 1.75 * 3.14159265359; // 2π for a full circle
         
-        // Calculate the new x and y positions
-        float radius = 50.0; // Adjust the radius as needed
+        float radius = 50.0; 
         float newX = radius * sin(angle);
         float newZ = radius * cos(angle);
         
-        // Apply the circular motion
         transformed.x -= newX * locProg;
         transformed.z += newZ * locProg;
         
@@ -127,20 +122,18 @@ export const Orb = forwardRef<THREE.Mesh, OrbProps>(
   (
     {
       animate = false,
-      orbState,
-      setOrbState,
       position = new THREE.Vector3(0, 0, 0),
       transitionDist = 3,
       ...props
     },
     outerMeshRef
   ) => {
+    const [location] = useLocation();
     const thetaRef = useRef(0);
     const innerMeshRef = useRef<THREE.Mesh>(null);
     const { scene: orb } = useGLTF("/models/orb.glb");
     useImperativeHandle(outerMeshRef, () => innerMeshRef.current!, []);
     let duration = 0;
-    const orbZ = -3;
     const targetPosition = useMemo(() => {
       return new THREE.Vector3();
     }, []);
@@ -150,25 +143,22 @@ export const Orb = forwardRef<THREE.Mesh, OrbProps>(
     const orbMaterial = OrbMaterial();
 
     useFrame(({ camera }) => {
-      if (
-        !innerMeshRef.current ||
-        orbState === OrbState.DESTROYED ||
-        !animate
-      ) {
+      if (!innerMeshRef.current || !animate) {
         return;
       }
 
-      if (orbState !== OrbState.TRANSITIONING) {
+      if (location === "/menu") {
+        orbMaterial.uniforms.uProgress.value = 0;
         innerMeshRef.current.rotation.y += 0.005;
         orbMaterial.uniforms.uTime.value += 0.005;
         thetaRef.current += 0.0025;
         innerMeshRef.current.position.x =
           position.x + Math.sin(thetaRef.current);
         innerMeshRef.current.position.z =
-          position.y + Math.cos(thetaRef.current) + orbZ;
+          position.y + Math.cos(thetaRef.current) + position.z;
         innerMeshRef.current.position.y =
           position.z + Math.cos(thetaRef.current - 1);
-      } else {
+      } else if (location === "/menu/projects") {
         camera.getWorldDirection(direction);
         direction.multiplyScalar(transitionDist);
 
@@ -182,8 +172,6 @@ export const Orb = forwardRef<THREE.Mesh, OrbProps>(
         if (duration > 180) {
           if (orbMaterial.uniforms.uProgress.value < 2) {
             orbMaterial.uniforms.uProgress.value += 0.005;
-          } else {
-            setOrbState(OrbState.DESTROYED);
           }
         }
       }
@@ -195,7 +183,7 @@ export const Orb = forwardRef<THREE.Mesh, OrbProps>(
         mesh = child;
       }
     });
-    let geometry;
+    let geometry: THREE.BufferGeometry<THREE.NormalBufferAttributes>;
     if (mesh) {
       geometry = mesh.geometry.toNonIndexed();
       mesh.geometry = geometry.toNonIndexed();
