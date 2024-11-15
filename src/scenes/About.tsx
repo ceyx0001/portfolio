@@ -133,7 +133,7 @@ export const AboutScene = forwardRef<
     const headers = ["About Myself", "My Journey"];
     const bodies = [
       "I am a passionate web developer with a knack for creating interactive experiences. With a strong foundation in both front-end and back-end development, I'm ready to bring your ideas to life",
-      "I began programming in 2018, starting with a curiosity for how cool things like games and stunning websites were made. This curiosity evolved into a deep-seated love for programming and app development. Since then, I’ve honed my skills and learned many valuable concepts.",
+      "I began programming in 2018, starting with a curiosity for how games and stunning websites were made. This curiosity evolved into a deep-seated love for programming and app development. Since then, I’ve honed my skills and learned many valuable concepts.",
     ];
 
     return headers.map((header, index) => ({

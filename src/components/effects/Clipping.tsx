@@ -21,7 +21,7 @@ export const Clipping = ({
 }: ClippingProps) => {
   const [, api] = useSpring(() => ({
     clippingConstant: 0,
-    config: { tension: 200, friction: 100,  ...config},
+    config: { tension: 400, friction: 100,  ...config},
     onChange: ({ value }) => {
       clippingPlane.constant = value.clippingConstant;
     },
