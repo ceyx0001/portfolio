@@ -1,6 +1,6 @@
 import { PrimitiveProps } from "@react-three/fiber";
 import { RapierRigidBody, RigidBody } from "@react-three/rapier";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useMemo } from "react";
 import { ConvexObjectBreaker } from "three-stdlib";
 import * as THREE from "three";
 
@@ -16,6 +16,7 @@ export const Break = ({
   material?: THREE.MeshPhysicalMaterial;
 } & PrimitiveProps) => {
   const rbRef = useRef<RapierRigidBody>(null);
+  const reset = useMemo(() => new THREE.Vector3(), []);
 
   useEffect(() => {
     if (!rbRef.current) {
@@ -23,13 +24,7 @@ export const Break = ({
     }
 
     if (!object.userData.shard) {
-      breaker.prepareBreakableObject(
-        object,
-        0,
-        new THREE.Vector3(),
-        new THREE.Vector3(),
-        true
-      );
+      breaker.prepareBreakableObject(object, 0, reset, reset, true);
     }
 
     rbRef.current.setLinvel(
@@ -46,7 +41,8 @@ export const Break = ({
     );
 
     object.userData.rbRef = rbRef.current;
-  }, [object]);
+  }, [object, reset]);
+  
   return (
     <RigidBody
       ref={rbRef}
@@ -55,11 +51,7 @@ export const Break = ({
       restitution={0}
       {...props}
     >
-      <primitive
-        object={object}
-        material={material}
-        onClick={onClick}
-      >
+      <primitive object={object} material={material} onClick={onClick}>
         {children}
       </primitive>
     </RigidBody>

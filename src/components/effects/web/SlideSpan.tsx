@@ -2,20 +2,20 @@ import React, { useEffect, useRef } from "react";
 import { animated, useSpringRef, useTrail } from "@react-spring/web";
 import { v4 as uuidv4 } from "uuid";
 
-export type SlideInProps = {
+export type SlideSpanProps = {
   start: string;
   end: string;
   delay?: number;
 } & React.HTMLAttributes<HTMLDivElement>;
 
-export const SlideIn = ({
+export const SlideSpan = ({
   children,
   start,
   end,
   delay = 0,
   style,
   ...props
-}: SlideInProps) => {
+}: SlideSpanProps) => {
   const items = React.Children.toArray(children);
   const api = useSpringRef();
   const containerRef = useRef<HTMLDivElement>(null);

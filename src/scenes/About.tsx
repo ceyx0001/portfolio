@@ -27,7 +27,6 @@ import {
   Sky,
   Plane,
   MeshTransmissionMaterial,
-  Preload,
 } from "@react-three/drei";
 import { GOLDENRATIO } from "../types";
 import { Physics, RapierRigidBody, RigidBody } from "@react-three/rapier";
@@ -514,7 +513,6 @@ export const AboutScene = forwardRef<
         rotation={[-0.4, 0, 0]}
         makeDefault
       />
-      <Preload all />
     </group>
   );
 });

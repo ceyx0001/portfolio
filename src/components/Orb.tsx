@@ -60,7 +60,7 @@ export const OrbMaterial = () => {
         
         transformed = rotate(transformed, vec3(0.0, 1.0, 0.0), -aRand * locProg);
         
-        float angle = locProg * 1.75 * 3.14159265359; // 2π for a full circle
+        float angle = locProg *2.0* 3.14159265359; // 2π for a full circle
         
         float radius = 50.0; 
         float newX = radius * sin(angle);
@@ -123,7 +123,7 @@ export const Orb = forwardRef<THREE.Mesh, OrbProps>(
     {
       animate = false,
       position = new THREE.Vector3(0, 0, 0),
-      transitionDist = 3,
+      transitionDist = 7,
       ...props
     },
     outerMeshRef
@@ -134,11 +134,12 @@ export const Orb = forwardRef<THREE.Mesh, OrbProps>(
     const { scene: orb } = useGLTF("/models/orb.glb");
     useImperativeHandle(outerMeshRef, () => innerMeshRef.current!, []);
     let duration = 0;
-    const targetPosition = useMemo(() => {
-      return new THREE.Vector3();
-    }, []);
-    const direction = useMemo(() => {
-      return new THREE.Vector3();
+    const { targetPosition, direction, quaternion } = useMemo(() => {
+      return {
+        targetPosition: new THREE.Vector3(),
+        direction: new THREE.Vector3(),
+        quaternion: new THREE.Quaternion(0, 0, 0, 1),
+      };
     }, []);
     const orbMaterial = OrbMaterial();
 
@@ -147,7 +148,7 @@ export const Orb = forwardRef<THREE.Mesh, OrbProps>(
         return;
       }
 
-      if (location === "/menu") {
+      if (location === "/menu" || location === "/") {
         orbMaterial.uniforms.uProgress.value = 0;
         innerMeshRef.current.rotation.y += 0.005;
         orbMaterial.uniforms.uTime.value += 0.005;
@@ -164,7 +165,7 @@ export const Orb = forwardRef<THREE.Mesh, OrbProps>(
 
         targetPosition.copy(camera.position).add(direction);
 
-        innerMeshRef.current.quaternion.slerp(camera.quaternion, 0.01);
+        innerMeshRef.current.quaternion.slerp(quaternion, 0.01);
         innerMeshRef.current.position.lerp(targetPosition, 0.01);
 
         duration += 1;

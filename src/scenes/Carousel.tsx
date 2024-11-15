@@ -1,33 +1,53 @@
 import {
   Scroll,
   ScrollControls,
-  Image,
   useScroll,
-  ImageProps,
   Line,
+  RenderTexture,
+  Plane,
+  ShapeProps,
+  Html,
+  ScrollControlsProps,
 } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { easing } from "maath";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { create } from "zustand";
-import * as THREE from "three";
 import { useShallow } from "zustand/shallow";
+import * as THREE from "three";
+import { HtmlExile, ThreeExile } from "./projects/Exile";
+import { Portal } from "../components/effects/Portal";
+import { useLocation } from "wouter";
 type CarouselState = {
   clicked: number | null;
-  urls: string[];
+  components: React.ReactNode[];
   setClicked: (state: number | null) => void;
 };
 
 const useCarouselStore = create<CarouselState>((set) => ({
   clicked: null,
-  urls: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((u) => `/test/${u}.jpg`),
+  components: [],
   setClicked: (clicked) => set({ clicked }),
 }));
 
 export function CarouselScene() {
+  const { geometry } = useMemo(() => {
+    return {
+      geometry: new THREE.PlaneGeometry(),
+    };
+  }, []);
+  const [location, setLocation] = useLocation();
+
   return (
     <>
-      <Items />
+      <Item index={0} enabled={true} pages={3}>
+        <Scroll>
+          <ThreeExile path="/projects/exile" />
+        </Scroll>
+        <Scroll html>
+          <HtmlExile path="/projects/exile" />
+        </Scroll>
+      </Item>
     </>
   );
 }
@@ -45,18 +65,17 @@ type ImageMaterialType = JSX.IntrinsicElements["shaderMaterial"] & {
 
 type ItemProps = {
   index: number;
-  position: number[];
-  scale: [number, number];
-  path: string;
-} & ImageProps;
+} & ScrollControlsProps;
 
-function Item({ index, position, scale, ...props }: ItemProps) {
-  const ref = useRef<THREE.Mesh>(null);
-  const scroll = useScroll();
-  const { clicked, urls, setClicked } = useCarouselStore(
+function Item({ index, children, ...props }: ItemProps) {
+  const geometry = useMemo(() => {
+    return new THREE.PlaneGeometry();
+  }, []);
+  const [, setLocation] = useLocation();
+  const { clicked, components, setClicked } = useCarouselStore(
     useShallow((state) => ({
       clicked: state.clicked,
-      urls: state.urls,
+      components: state.components,
       setClicked: state.setClicked,
     }))
   );
@@ -66,14 +85,14 @@ function Item({ index, position, scale, ...props }: ItemProps) {
   };
   const over = () => hover(true);
   const out = () => hover(false);
-
+  /*
   useFrame((_, delta) => {
     if (!ref.current?.material) {
       return;
     }
     const y = scroll.curve(
-      index / urls.length - 1.5 / urls.length,
-      4 / urls.length
+      index / components.length - 1.5 / components.length,
+      4 / components.length
     );
 
     if (
@@ -119,24 +138,30 @@ function Item({ index, position, scale, ...props }: ItemProps) {
       );
     }
   });
+*/
 
   return (
-    <Image
-      ref={ref}
-      {...props}
-      position={position}
-      scale={scale}
-      onClick={click}
-      onPointerOver={over}
-      onPointerOut={out}
-    />
+    <ScrollControls {...props}>
+      <Portal
+        geometry={geometry}
+        path={"/projects/exile"}
+        onClick={() => {
+          setLocation("/projects/exile");
+        }}
+      >
+        {children}
+      </Portal>
+    </ScrollControls>
   );
 }
 
 function Items({ w = 2, gap = 0.15, extension = 6 }) {
-  const urls = useCarouselStore((state) => state.urls);
-  const append = urls.slice(0, extension - 1);
-  const prepend = urls.slice(urls.length - extension, urls.length);
+  const components = useCarouselStore((state) => state.components);
+  const append = components.slice(0, extension - 1);
+  const prepend = components.slice(
+    components.length - extension,
+    components.length
+  );
   const { width } = useThree((state) => state.viewport);
   const xW = w + gap;
 
@@ -145,86 +170,53 @@ function Items({ w = 2, gap = 0.15, extension = 6 }) {
       infinite
       horizontal
       damping={0.1}
-      pages={(width - xW + 2 + urls.length * xW) / width}
+      pages={(width - xW + 2 + components.length * xW) / width}
       style={{ overflow: "hidden" }}
     >
       <Progress />
       <Scroll>
-        {prepend.map((url, i) => (
+        {prepend.map((e, i) => (
           <Item
-            path={`/projects/${extension + i}`}
             key={"carousel-item-prepend-" + i}
             index={i - extension}
             position={[i * xW - extension * xW, 0, 0]}
-            scale={[w, 4]}
-            url={url}
-          />
+            scale={[0, 0, 0]}
+          >
+            {e}
+          </Item>
         ))}
-        {urls.map((url, i) => (
+        {components.map((e, i) => (
           <Item
-            path={`/projects/${i}`}
             key={"carousel-item-" + i}
             index={i}
             position={[i * xW, 0, 0]}
-            scale={[w, 4]}
-            url={url}
-          />
+            scale={[0.1, 0.1, 0]}
+          >
+            {e}
+          </Item>
         ))}
-        {append.map((url, i) => (
+        {append.map((e, i) => (
           <Item
-            path={`/projects/${i}`}
             key={"carousel-item-append-" + i}
-            index={urls.length + i}
-            position={[(i + urls.length) * xW, 0, 0]}
-            scale={[w, 4]}
-            url={url}
-          />
+            index={components.length + i}
+            position={[(i + components.length) * xW, 0, 0]}
+            scale={[0, 0, 0]}
+          >
+            {e}
+          </Item>
         ))}
       </Scroll>
     </ScrollControls>
   );
 }
-
-/*function Items({ w = 1.5, gap = 0.15 }) {
-  const urls = useCarouselStore((state) => state.urls);
-  const { width } = useThree((state) => state.viewport);
-  const xW = w + gap;
-
-  return (
-    <ScrollControls
-      infinite
-      horizontal
-      damping={0.1}
-      pages={(width - xW + urls.length * xW) / width}
-    >
-      <Progress />
-      <Scroll>
-        {urls.map((url, i) => (
-          <Item
-            key={"carousel-item-" + i}
-            index={i}
-            position={[i * xW, 0, 0]}
-            scale={[w, 4]}
-            url={url}
-          />
-        ))}
-      </Scroll>
-    </ScrollControls>
-  );
-}
- */
 
 function Progress() {
   const ref = useRef<THREE.Group>(null);
   const scroll = useScroll();
-  const urls = useCarouselStore((state) => state.urls);
+  const urls = useCarouselStore((state) => state.components);
   const { height } = useThree((state) => state.viewport);
   useFrame((_, delta) => {
     ref.current?.children.forEach((child, index) => {
-      // Give me a value between 0 and 1
-      //   starting at the position of my item
-      //   ranging across 4 / total length
-      //   make it a sine, so the value goes from 0 to 1 to 0.
       const y = scroll.curve(
         index / urls.length - 1.5 / urls.length,
         4 / urls.length
