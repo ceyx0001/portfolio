@@ -1,7 +1,6 @@
 import * as THREE from "three";
 import {
   Circle,
-  OrbitControls,
   PerspectiveCamera,
   Text,
 } from "@react-three/drei";
@@ -86,7 +85,6 @@ export const Menu = forwardRef<THREE.Group, GroupProps>(({ ...props }, ref) => {
         ))}
       </group>
 
-      <OrbitControls />
       <Circle args={[50]} position={[0, 0, -20]}>
         <meshBasicMaterial color="black" />
       </Circle>

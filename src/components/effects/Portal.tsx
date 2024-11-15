@@ -51,7 +51,7 @@ export const Portal = forwardRef<THREE.Mesh, PortalProps>(
       }
 
       const targetBlend = match ? 1 : 0;
-      portalRef.current.blend = lerp(portalRef.current.blend, targetBlend, 0.2);
+      portalRef.current.blend = lerp(portalRef.current.blend, targetBlend, 0.1);
       innerMeshRef.current.position.lerp(targetPosition, 0.1);
 
       if (match) {

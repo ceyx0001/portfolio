@@ -40,7 +40,7 @@ export function CarouselScene() {
 
   return (
     <>
-      <Item index={0} enabled={true} pages={3}>
+      <Item index={0} enabled={location === "/projects/exile"} pages={3}>
         <Scroll>
           <ThreeExile path="/projects/exile" />
         </Scroll>
@@ -85,7 +85,8 @@ function Item({ index, children, ...props }: ItemProps) {
   };
   const over = () => hover(true);
   const out = () => hover(false);
-  /*
+  const ref = useRef<THREE.Group>();
+
   useFrame((_, delta) => {
     if (!ref.current?.material) {
       return;
@@ -138,20 +139,21 @@ function Item({ index, children, ...props }: ItemProps) {
       );
     }
   });
-*/
 
   return (
-    <ScrollControls {...props}>
-      <Portal
-        geometry={geometry}
-        path={"/projects/exile"}
-        onClick={() => {
-          setLocation("/projects/exile");
-        }}
-      >
-        {children}
-      </Portal>
-    </ScrollControls>
+    <group ref={ref}>
+      <ScrollControls {...props}>
+        <Portal
+          geometry={geometry}
+          path={"/projects/exile"}
+          onClick={() => {
+            setLocation("/projects/exile");
+          }}
+        >
+          {children}
+        </Portal>
+      </ScrollControls>
+    </group>
   );
 }
 

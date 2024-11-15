@@ -172,7 +172,9 @@ export const HtmlExile: HtmlProject = (props) => {
           className={`${css.projectText}`}
         >
           <h2>
-            <SlideSpan {...config}>Stack</SlideSpan>
+            <SlideSpan start="translateY(400px)" end="translateY(0px)">
+              Stack
+            </SlideSpan>
           </h2>
           <ul
             style={{
@@ -188,8 +190,8 @@ export const HtmlExile: HtmlProject = (props) => {
               "Express",
               "PostgreSQL",
               "Vercel",
-            ].map((item) => (
-              <SlideSpan key={uuidv4()} {...config}>
+            ].map((item, i) => (
+              <SlideSpan key={uuidv4()} start="translateY(400px)" end="translateY(0px)" delay={100 * i}>
                 <li>{item}</li>
               </SlideSpan>
             ))}

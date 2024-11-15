@@ -16,7 +16,7 @@ export default function App() {
       >
         <Perf />
         <Suspense fallback={<Loading />}>
-          <CarouselScene />
+          <IntroductionScene />
         </Suspense>
         <Preload all />
       </Canvas>
