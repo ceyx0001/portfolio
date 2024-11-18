@@ -16,9 +16,8 @@ export default function App() {
       >
         <Perf />
         <Suspense fallback={<Loading />}>
-          <IntroductionScene />
+          <CarouselScene />
         </Suspense>
-        <Preload all />
       </Canvas>
     </div>
   );

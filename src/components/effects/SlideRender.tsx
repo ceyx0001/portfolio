@@ -2,7 +2,6 @@ import { useEffect, useRef } from "react";
 import { RenderTexture, useIntersect } from "@react-three/drei";
 import * as THREE from "three";
 import { MeshProps, useFrame } from "@react-three/fiber";
-import React from "react";
 
 export type SlideRenderProps = {
   width?: number;

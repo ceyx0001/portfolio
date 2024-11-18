@@ -10,7 +10,7 @@ export const Video = ({
     return (
       <mesh {...props}>
         <planeGeometry args={ratio} />
-        <meshBasicMaterial map={texture} toneMapped={false} />
+        <meshBasicMaterial map={texture} />
       </mesh>
     );
   };

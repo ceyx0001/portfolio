@@ -50,6 +50,8 @@ export const WaveMaterial = shaderMaterial(
         gl_FragColor = b(uv, uTime) * 0.5 + 
                     b(uv, uTime * 2.0) * 0.5 + 
                     b(uv + vec2(0.3, 0.0), uTime * 3.3) * 0.5;
+      #include <tonemapping_fragment>
+      #include <colorspace_fragment>
     }
     `
 );

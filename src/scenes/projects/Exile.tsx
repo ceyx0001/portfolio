@@ -1,79 +1,17 @@
 import { v4 as uuidv4 } from "uuid";
 import { RotatingText } from "../../components/effects/web/RotatingText";
 import { SlideSpan } from "../../components/effects/web/SlideSpan";
-import { Suspense, useEffect, useRef } from "react";
-import * as THREE from "three";
+import { useEffect, useRef } from "react";
 import css from "../../styles.module.css";
-import { GOLDENRATIO, HtmlProject, ThreeProject } from "../../types";
-import { Video } from "../../components/Video";
+import { HtmlProject, ThreeProject } from "../../types";
 import { WaveMaterial, WaveMaterialProps } from "../../shaders/WaveMaterial";
 import { extend, MeshProps, useFrame } from "@react-three/fiber";
 import { useLocation } from "wouter";
-import { SlideRender } from "../../components/effects/SlideRender";
 extend({ WaveMaterial });
 
-export const ThreeExile: ThreeProject = (props) => {
-  const [location] = useLocation();
+export const ThreeExile: ThreeProject = (projectProps) => {
   const uTime = useRef(0);
   const matRef = useRef<WaveMaterialProps>(null);
-
-  const Gallery = () => {
-    const scale = 0.45;
-    const sx = 16 * scale;
-    const sy = 9 * scale;
-    const clippings = [
-      {
-        src: "/projects/exile/1.mp4",
-        position: [GOLDENRATIO * 1.75, -5, 0] as [number, number, number],
-        sx: sx,
-        sy: sy,
-        trigger: 0,
-      },
-      {
-        src: "/projects/exile/2.mp4",
-        position: [GOLDENRATIO * 1.75, -12, 0] as [number, number, number],
-        sx: sx,
-        sy: sy,
-        trigger: 1,
-      },
-      {
-        src: "/projects/exile/3.mp4",
-        position: [GOLDENRATIO * 2, -18.5, 0] as [number, number, number],
-        sx: sx * 0.9,
-        sy: sy * 0.9,
-        trigger: 2,
-      },
-      {
-        src: "/projects/exile/4.mp4",
-        position: [GOLDENRATIO * 2, -22.25, 0] as [number, number, number],
-        sx: sx * 0.9,
-        sy: sy * 0.9,
-        trigger: 2,
-      },
-    ];
-
-    return (
-      <>
-        {clippings.map((e, i) => (
-          <Suspense
-            key={"exile-emporium-video-" + i}
-            fallback={
-              <meshStandardMaterial side={THREE.DoubleSide} wireframe />
-            }
-          >
-            <SlideRender
-              trigger={location === props.path}
-              dist={5}
-              position={e.position}
-              scale={[e.sx, e.sy, 0]}
-            >
-              <Video ratio={[15, 7.5]} src={e.src} />
-            </SlideRender>
-          </Suspense>
-        ))}
-      </>
-    );
-  };
 
   const Wave = ({ ...props }: MeshProps) => {
     useEffect(() => {
@@ -101,12 +39,11 @@ export const ThreeExile: ThreeProject = (props) => {
   };
 
   return (
-    <group {...props}>
+    <group {...projectProps}>
       <Wave
         position={[0, 0, 0]}
         scale={[window.innerWidth, window.innerHeight, 0]}
       />
-      <Gallery />
     </group>
   );
 };
@@ -115,7 +52,7 @@ export const HtmlExile: HtmlProject = (props) => {
   const [location] = useLocation();
   const HtmlElements = () => {
     const leftAnchor = "8vw";
-    const config = { start: "translateY(200px)", end: "translateY(0px)" };
+    const config = { start: "translateY(1000px)", end: "translateY(0px)" };
 
     return (
       <>
@@ -131,6 +68,7 @@ export const HtmlExile: HtmlProject = (props) => {
             src={"/projects/exile/mirror.svg"}
           />
         </SlideSpan>
+
         <div
           style={{ top: "28vh", left: leftAnchor, width: "36rem" }}
           className={`${css.projectText}`}
@@ -147,12 +85,21 @@ export const HtmlExile: HtmlProject = (props) => {
               </RotatingText>
             </span>
           </div>
-          <h2>
-            <SlideSpan {...config}>
-              <span>Less hassle. More play.</span>
-            </SlideSpan>
-          </h2>
+
           <SlideSpan {...config}>
+            <div
+              style={{
+                position: "absolute",
+                top: "-32vh",
+                left: "37vw",
+                width: "56rem",
+              }}
+            >
+              <video autoPlay loop style={{ width: "100%", height: "auto" }}>
+                <source src={"/projects/exile/1.mp4"} type="video/mp4" />
+              </video>
+            </div>
+            <h2>Less hassle. More play.</h2>
             <span>
               A trading platform made for the Path of Exile community that
               consolidates player inventories from legacy forum threads, making
@@ -176,6 +123,7 @@ export const HtmlExile: HtmlProject = (props) => {
               Stack
             </SlideSpan>
           </h2>
+
           <ul
             style={{
               display: "flex",
@@ -191,7 +139,12 @@ export const HtmlExile: HtmlProject = (props) => {
               "PostgreSQL",
               "Vercel",
             ].map((item, i) => (
-              <SlideSpan key={uuidv4()} start="translateY(400px)" end="translateY(0px)" delay={100 * i}>
+              <SlideSpan
+                key={uuidv4()}
+                start="translateY(400px)"
+                end="translateY(0px)"
+                delay={100 * i}
+              >
                 <li>{item}</li>
               </SlideSpan>
             ))}
@@ -200,7 +153,7 @@ export const HtmlExile: HtmlProject = (props) => {
 
         <div
           style={{
-            top: "114vh",
+            top: "118vh",
             left: leftAnchor,
             width: "38rem",
             display: "flex",
@@ -232,6 +185,19 @@ export const HtmlExile: HtmlProject = (props) => {
                 From elegant hover effects and smooth animations to seamless
                 navigation, for a simple yet effective experience.
               </p>
+            </div>
+
+            <div
+              style={{
+                position: "absolute",
+                top: "-50vh",
+                left: "5.5vw",
+                width: "56rem",
+              }}
+            >
+              <video autoPlay loop style={{ width: "100%", height: "auto" }}>
+                <source src={"/projects/exile/2.mp4"} type="video/mp4" />
+              </video>
             </div>
           </SlideSpan>
         </div>
@@ -267,6 +233,36 @@ export const HtmlExile: HtmlProject = (props) => {
                   Visit
                 </a>
               </h1>
+            </div>
+            <div
+              style={{
+                position: "absolute",
+                top: "-56vh",
+                left: "35.25vw",
+                width: "56rem",
+                display: "flex",
+                flexDirection: "column",
+                gap: "1rem",
+              }}
+            >
+              <video autoPlay loop style={{ width: "90%", height: "auto" }}>
+                <source src={"/projects/exile/3.mp4"} type="video/mp4" />
+              </video>
+            </div>
+            <div
+              style={{
+                position: "absolute",
+                top: "-7vh",
+                left: "35.25vw",
+                width: "56rem",
+                display: "flex",
+                flexDirection: "column",
+                gap: "1rem",
+              }}
+            >
+              <video autoPlay loop style={{ width: "90%", height: "auto" }}>
+                <source src={"/projects/exile/4.mp4"} type="video/mp4" />
+              </video>
             </div>
           </SlideSpan>
         </div>
