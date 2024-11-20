@@ -1,11 +1,11 @@
 import { animated, useSpringRef, useTrail } from "@react-spring/web";
+import React from "react";
 import { useEffect, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 export type RotatingTextProps = {
   delay?: number;
-  children: string;
-} & Omit<React.HTMLAttributes<HTMLDivElement>, "children">;
+} & React.HTMLAttributes<HTMLDivElement>;
 
 export const RotatingText = ({
   style,
@@ -13,13 +13,13 @@ export const RotatingText = ({
   delay = 0,
   ...props
 }: RotatingTextProps) => {
-  const items = children.split(/(\s+)/);
+  const items = React.Children.toArray(children);
   const api = useSpringRef();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const trail = useTrail(items.length, {
     ref: api,
-    from: { transform: "rotateY(90deg) scale(0.75)", opacity: 0 },
+    from: { transform: "rotateY(-90deg) scale(0.75)", opacity: 0 },
     to: { transform: "rotateY(0deg) scale(1)", opacity: 1 },
     config: { tension: 1000, friction: 150 },
     delay: delay,
@@ -47,10 +47,7 @@ export const RotatingText = ({
           key={uuidv4()}
           style={{
             ...spring,
-            position: "relative",
-            display: "inline-block",
-            transformOrigin: "bottom",
-            whiteSpace: "pre-wrap",
+            transformOrigin: "left",
           }}
         >
           {items[i]}

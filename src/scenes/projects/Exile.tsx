@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from "uuid";
 import { RotatingText } from "../../components/effects/web/RotatingText";
 import { SlideSpan } from "../../components/effects/web/SlideSpan";
 import { useEffect, useRef } from "react";
@@ -50,55 +49,48 @@ export const ThreeExile: ThreeProject = (projectProps) => {
 
 export const HtmlExile: HtmlProject = (props) => {
   const [location] = useLocation();
-  const HtmlElements = () => {
-    const leftAnchor = "8vw";
-    const config = { start: "translateY(1000px)", end: "translateY(0px)" };
 
-    return (
-      <>
-        <SlideSpan start="translateY(-200px)" end="translateY(0px)">
-          <img
-            style={{
-              position: "absolute",
-              width: "20vw",
-              height: "35vh",
-              top: "25vh",
-              left: "21vw",
-            }}
-            src={"/projects/exile/mirror.svg"}
-          />
-        </SlideSpan>
+  const leftAnchor = "8vw";
+  const config = { start: "translateY(1000px)", end: "translateY(0px)" };
 
-        <div
-          style={{ top: "28vh", left: leftAnchor, width: "36rem" }}
-          className={`${css.projectText}`}
-        >
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <span>
-              <RotatingText className={`${css.projectHeader}`}>
-                Exile
-              </RotatingText>
-            </span>
-            <span>
-              <RotatingText className={`${css.projectHeader}`} delay={200}>
-                Emporium
-              </RotatingText>
-            </span>
-          </div>
-
-          <SlideSpan {...config}>
-            <div
-              style={{
-                position: "absolute",
-                top: "-32vh",
-                left: "37vw",
-                width: "56rem",
-              }}
+  const HtmlContent = () => (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        width: "100vw",
+      }}
+    >
+      <div
+        style={{
+          width: "85vw",
+          top: "25vh",
+          display: "flex",
+        }}
+        className={`${css.projectText}`}
+      >
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <span>
+            <RotatingText
+              className={`${css.projectHeader}`}
+              style={{ display: "flex", flexDirection: "column" }}
             >
-              <video autoPlay loop style={{ width: "100%", height: "auto" }}>
-                <source src={"/projects/exile/1.mp4"} type="video/mp4" />
-              </video>
-            </div>
+              <img
+                style={{
+                  position: "absolute",
+                  width: "20vw",
+                  height: "35vh",
+                  top: "-4vh",
+                  left: "15vw",
+                }}
+                src={"/projects/exile/mirror.svg"}
+              />
+              <span>Exile</span>
+              <span>Emporium</span>
+            </RotatingText>
+          </span>
+          <SlideSpan {...config} style={{ width: "80%" }}>
             <h2>Less hassle. More play.</h2>
             <span>
               A trading platform made for the Path of Exile community that
@@ -108,167 +100,148 @@ export const HtmlExile: HtmlProject = (props) => {
             </span>
           </SlideSpan>
         </div>
-
-        <div
-          style={{
-            top: "78vh",
-            left: "45vw",
-            width: "38rem",
-            display: "flex",
-          }}
-          className={`${css.projectText}`}
-        >
-          <h2>
-            <SlideSpan start="translateY(400px)" end="translateY(0px)">
-              Stack
-            </SlideSpan>
-          </h2>
-
+        <div>
+          <SlideSpan {...config}>
+            <video autoPlay loop style={{ width: "100%" }}>
+              <source src={"/projects/exile/1.mp4"} type="video/mp4" />
+            </video>
+          </SlideSpan>
           <ul
             style={{
-              display: "flex",
-              gap: "2rem",
-              alignItems: "center",
+              padding: "0rem",
             }}
           >
-            {[
-              "React",
-              "Tailwind",
-              "TypeScript",
-              "Express",
-              "PostgreSQL",
-              "Vercel",
-            ].map((item, i) => (
-              <SlideSpan
-                key={uuidv4()}
-                start="translateY(400px)"
-                end="translateY(0px)"
-                delay={100 * i}
-              >
-                <li>{item}</li>
-              </SlideSpan>
-            ))}
+            <SlideSpan
+              {...config}
+              style={{
+                display: "flex",
+                gap: "2rem",
+                alignItems: "center",
+              }}
+            >
+              <h2>Stack</h2>
+              {[
+                "React",
+                "Tailwind",
+                "TypeScript",
+                "Express",
+                "PostgreSQL",
+                "Vercel",
+              ].map((item, i) => (
+                <li key={"exile-li-" + i}>{item}</li>
+              ))}
+            </SlideSpan>
           </ul>
         </div>
+      </div>
 
-        <div
-          style={{
-            top: "118vh",
-            left: leftAnchor,
-            width: "38rem",
-            display: "flex",
-            flexDirection: "column",
-          }}
-          className={`${css.projectText}`}
-        >
-          <SlideSpan {...config}>
-            <div>
-              <h3>Data aggregation</h3>
-              <p>
-                The app uses data scraping techniques to extract and analyze
-                information from game forums, enabling the cataloging of
-                comprehensive and accurate results.
-              </p>
-            </div>
+      <div
+        style={{
+          width: "85vw",
+          top: "118vh",
+          display: "flex",
+        }}
+        className={`${css.projectText}`}
+      >
+        <SlideSpan {...config} style={{width: "80%"}}>
+          <>
+            <h3>Data aggregation</h3>
+            <p>
+              The app uses data scraping techniques to extract and analyze
+              information from game forums, enabling the cataloging of
+              comprehensive and accurate results.
+            </p>
+          </>
 
-            <div>
-              <h3>Searching</h3>
-              <p>
-                With the powerful search feature, users can easily and quickly
-                find items with advanced based on item type, affixes, and more.
-              </p>
-            </div>
+          <>
+            <h3>Searching</h3>
+            <p>
+              With the powerful search feature, users can easily and quickly
+              find items with advanced based on item type, affixes, and more.
+            </p>
+          </>
 
-            <div>
-              <h3>Design</h3>
-              <p>
-                From elegant hover effects and smooth animations to seamless
-                navigation, for a simple yet effective experience.
-              </p>
-            </div>
+          <>
+            <h3>Design</h3>
+            <p>
+              From elegant hover effects and smooth animations to seamless
+              navigation, for a simple yet effective experience.
+            </p>
+          </>
+        </SlideSpan>
+        <SlideSpan {...config}>
+          <video autoPlay loop style={{ width: "100%", paddingLeft: "12rem", paddingTop:" 2rem" }}>
+            <source src={"/projects/exile/2.mp4"} type="video/mp4" />
+          </video>
+        </SlideSpan>
+      </div>
 
-            <div
-              style={{
-                position: "absolute",
-                top: "-50vh",
-                left: "5.5vw",
-                width: "56rem",
-              }}
-            >
-              <video autoPlay loop style={{ width: "100%", height: "auto" }}>
-                <source src={"/projects/exile/2.mp4"} type="video/mp4" />
-              </video>
-            </div>
-          </SlideSpan>
-        </div>
+      <div
+        style={{
+          top: "232vh",
+          left: leftAnchor,
+          width: "38rem",
+          display: "flex",
+          flexDirection: "column",
+          gap: "1rem",
+        }}
+        className={`${css.projectText}`}
+      >
+        <SlideSpan {...config}>
+          <div>
+            <h3>Integration.</h3>
+            <p>
+              By leveraging in-game data, the app seamlessly integrate with
+              third-party tools like Path of Building while also enabling
+              players to easily trade in-game and alerting item owners.
+            </p>
+          </div>
+          <div>
+            <h1>
+              <a
+                href="https://mirror-service-catalog.vercel.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={css.aArrow}
+              >
+                Visit
+              </a>
+            </h1>
+          </div>
+          <div
+            style={{
+              position: "absolute",
+              top: "-56vh",
+              left: "35.25vw",
+              width: "56rem",
+              display: "flex",
+              flexDirection: "column",
+              gap: "1rem",
+            }}
+          >
+            <video autoPlay loop style={{ width: "90%" }}>
+              <source src={"/projects/exile/3.mp4"} type="video/mp4" />
+            </video>
+          </div>
+          <div
+            style={{
+              position: "absolute",
+              top: "-7vh",
+              left: "35.25vw",
+              width: "56rem",
+              display: "flex",
+              flexDirection: "column",
+              gap: "1rem",
+            }}
+          >
+            <video autoPlay loop style={{ width: "90%" }}>
+              <source src={"/projects/exile/4.mp4"} type="video/mp4" />
+            </video>
+          </div>
+        </SlideSpan>
+      </div>
+    </div>
+  );
 
-        <div
-          style={{
-            top: "232vh",
-            left: leftAnchor,
-            width: "38rem",
-            display: "flex",
-            flexDirection: "column",
-            gap: "1rem",
-          }}
-          className={`${css.projectText}`}
-        >
-          <SlideSpan {...config}>
-            <div>
-              <h3>Integration.</h3>
-              <p>
-                By leveraging in-game data, the app seamlessly integrate with
-                third-party tools like Path of Building while also enabling
-                players to easily trade in-game and alerting item owners.
-              </p>
-            </div>
-            <div>
-              <h1>
-                <a
-                  href="https://mirror-service-catalog.vercel.app/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={css.aArrow}
-                >
-                  Visit
-                </a>
-              </h1>
-            </div>
-            <div
-              style={{
-                position: "absolute",
-                top: "-56vh",
-                left: "35.25vw",
-                width: "56rem",
-                display: "flex",
-                flexDirection: "column",
-                gap: "1rem",
-              }}
-            >
-              <video autoPlay loop style={{ width: "90%", height: "auto" }}>
-                <source src={"/projects/exile/3.mp4"} type="video/mp4" />
-              </video>
-            </div>
-            <div
-              style={{
-                position: "absolute",
-                top: "-7vh",
-                left: "35.25vw",
-                width: "56rem",
-                display: "flex",
-                flexDirection: "column",
-                gap: "1rem",
-              }}
-            >
-              <video autoPlay loop style={{ width: "90%", height: "auto" }}>
-                <source src={"/projects/exile/4.mp4"} type="video/mp4" />
-              </video>
-            </div>
-          </SlideSpan>
-        </div>
-      </>
-    );
-  };
-
-  return location === props.path ? <HtmlElements /> : null;
+  return location === props.path ? HtmlContent() : null;
 };
