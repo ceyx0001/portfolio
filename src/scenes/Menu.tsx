@@ -1,39 +1,25 @@
 import * as THREE from "three";
-import {
-  Circle,
-  PerspectiveCamera,
-  Text,
-} from "@react-three/drei";
+import { Circle, PerspectiveCamera, Text } from "@react-three/drei";
 import { Orb } from "../components/Orb";
 import { useLocation } from "wouter";
-import { forwardRef, useEffect, useMemo, useState } from "react";
-import { GroupProps, useThree } from "@react-three/fiber";
+import { forwardRef, useEffect, useRef, useState } from "react";
+import { GroupProps, useFrame, useThree } from "@react-three/fiber";
 import { Clipping } from "../components/effects/Clipping";
 import { AboutScene } from "./About";
+import { CarouselScene } from "./Carousel";
+import { easing } from "maath";
 
 export const Menu = forwardRef<THREE.Group, GroupProps>(({ ...props }, ref) => {
   const [location, setLocation] = useLocation();
   const viewport = useThree((state) => state.viewport);
   const [visible, setVisible] = useState(false);
-  const orbPos = useMemo(() => new THREE.Vector3(0, -4, 0), []);
-
-  useEffect(() => {
-    let timeout;
-    if (location === "/menu") {
-      timeout = setTimeout(() => {
-        setVisible(true);
-      }, 500);
-    } else {
-      setVisible(false);
-    }
-
-    return () => {
-      clearTimeout(timeout);
-    };
-  }, [location, viewport.height]);
-
+  const carouselRef = useRef(null);
+  const lookAtPoint = useRef(new THREE.Vector3());
+  const projectPath = "/menu/projects";
   const frontZ = -0.1;
   const behindZ = -5.2;
+  const orbPos = [0, -4, 0] as [number, number, number];
+  const clock = useThree((state) => state.clock);
   const buttons = [
     {
       text: "About",
@@ -50,10 +36,57 @@ export const Menu = forwardRef<THREE.Group, GroupProps>(({ ...props }, ref) => {
         if (location !== "/menu") {
           return;
         }
-        setLocation("/menu/projects");
+        setLocation(projectPath);
       },
     },
   ];
+
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+    if (location === "/menu") {
+      timeout = setTimeout(() => {
+        setVisible(true);
+      }, 500);
+
+      clock.elapsedTime = 0;
+    } else {
+      setVisible(false);
+    }
+
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [clock, location, viewport.height]);
+
+  const radius = 4.5;
+  const offset = Math.PI / 4.5;
+
+  useFrame((_, delta) => {
+    if (!carouselRef.current || location !== projectPath) {
+      return;
+    }
+
+    const speed = Math.min(3, (clock.elapsedTime / 3) * 3);
+    if (clock.elapsedTime * speed >= offset + Math.PI) {
+      easing.damp3(carouselRef.current.position, [0, 0, -radius], 0.1, delta);
+      return;
+    }
+
+    carouselRef.current.position.set(
+      radius * Math.cos(offset + clock.elapsedTime * speed),
+      0,
+      radius * Math.sin(offset + clock.elapsedTime * speed)
+    );
+
+    lookAtPoint.current
+      .set(
+        radius * Math.cos(clock.elapsedTime * speed),
+        0,
+        radius * Math.sin(clock.elapsedTime * speed)
+      )
+      .normalize();
+    carouselRef.current.lookAt(lookAtPoint.current);
+  });
 
   return (
     <group ref={ref} {...props}>
@@ -89,19 +122,23 @@ export const Menu = forwardRef<THREE.Group, GroupProps>(({ ...props }, ref) => {
         <meshBasicMaterial color="black" />
       </Circle>
 
-      <Orb animate={true} scale={0.25} position={orbPos} />
       <Clipping
         width={viewport.width}
         height={viewport.height}
         trigger={location === "/menu/about"}
       >
-        <AboutScene activePath={"/menu/about"} />
-        <PerspectiveCamera
-          position={[0, 4, 12]}
-          rotation={[-0.4, 0, 0]}
-          makeDefault
-        />
+        <group visible={!visible}>
+          <AboutScene activePath={"/menu/about"} />
+          <PerspectiveCamera
+            position={[0, 4, 12]}
+            rotation={[-0.4, 0, 0]}
+            makeDefault
+          />
+        </group>
       </Clipping>
+
+      <CarouselScene ref={carouselRef} />
+      <Orb animate={true} scale={0.25} position={orbPos} />
     </group>
   );
 });

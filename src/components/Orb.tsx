@@ -10,7 +10,6 @@ useGLTF.preload("/models/orb.glb");
 
 export type OrbProps = {
   animate?: boolean;
-  position?: THREE.Vector3;
   transitionDist?: number;
 } & MeshProps;
 
@@ -120,12 +119,7 @@ export const OrbMaterial = () => {
 
 export const Orb = forwardRef<THREE.Mesh, OrbProps>(
   (
-    {
-      animate = false,
-      position = new THREE.Vector3(0, 0, 0),
-      transitionDist = 7,
-      ...props
-    },
+    { animate = false, position, transitionDist = 7, ...props },
     outerMeshRef
   ) => {
     const [location] = useLocation();
@@ -154,11 +148,11 @@ export const Orb = forwardRef<THREE.Mesh, OrbProps>(
         orbMaterial.uniforms.uTime.value += 0.005;
         thetaRef.current += 0.0025;
         innerMeshRef.current.position.x =
-          position.x + Math.sin(thetaRef.current);
+          position[0] + Math.sin(thetaRef.current);
         innerMeshRef.current.position.z =
-          position.y + Math.cos(thetaRef.current) + position.z;
+          position[1] + Math.cos(thetaRef.current) + position[2];
         innerMeshRef.current.position.y =
-          position.z + Math.cos(thetaRef.current - 1);
+          position[2] + Math.cos(thetaRef.current - 1);
       } else if (location === "/menu/projects") {
         camera.getWorldDirection(direction);
         direction.multiplyScalar(transitionDist);

@@ -1,10 +1,10 @@
 import {
   Scroll,
-  ScrollControls,
   useScroll,
   ScrollControlsProps,
+  Plane,
 } from "@react-three/drei";
-import { GroupProps, MeshProps, useFrame } from "@react-three/fiber";
+import { GroupProps, useFrame } from "@react-three/fiber";
 import { easing } from "maath";
 import { useEffect, useMemo, useRef } from "react";
 import { create } from "zustand";
@@ -12,6 +12,9 @@ import * as THREE from "three";
 import { HtmlExile, ThreeExile } from "./projects/Exile";
 import { Portal } from "../components/effects/Portal";
 import { useLocation } from "wouter";
+import React from "react";
+
+const home = "/menu/projects";
 
 type ItemConfig = {
   path: string;
@@ -24,18 +27,28 @@ type CarouselState = {
 
 const useCarouselStore = create<CarouselState>(() => ({
   configs: [
-    { path: "/projects/exile1", scrollConfig: { pages: 3 } },
-    { path: "/projects/exile2", scrollConfig: { pages: 3 } },
+    { path: `${home}/exile`, scrollConfig: { pages: 3 } },
   ],
 }));
 
-export function CarouselScene() {
-  return (
-    <>
-      <Items />
-    </>
-  );
-}
+export const CarouselScene = React.forwardRef<THREE.Group, GroupProps>(
+  (props, ref) => {
+    const configs = useCarouselStore((state) => state.configs);
+    const position = props.position
+      ? [
+          props.position[0] - configs.length,
+          props.position[1],
+          props.position[2],
+        ]
+      : [0 - configs.length, 0, 0];
+    return (
+      <group {...props} ref={ref}>
+        <Items position={position} />
+      </group>
+    );
+  }
+);
+
 type ItemProps = {
   config: ItemConfig;
   location: string;
@@ -46,7 +59,10 @@ type ItemProps = {
       state?: S;
     }
   ) => void;
-} & MeshProps;
+  frameWidth: number;
+  frameHeight: number;
+  home: string;
+} & GroupProps;
 
 function Item({
   config,
@@ -54,9 +70,12 @@ function Item({
   setLocation,
   children,
   position,
+  frameWidth,
+  frameHeight,
+  home,
   ...props
 }: ItemProps) {
-  const ref = useRef<THREE.Mesh>(null);
+  const ref = useRef<THREE.Group>(null);
   const geometry = useMemo(() => new THREE.PlaneGeometry(2, 2), []);
 
   useFrame((_, delta) => {
@@ -73,20 +92,34 @@ function Item({
   });
 
   return (
-    <Portal
+    <group
       ref={ref}
-      geometry={geometry}
-      path={config.path}
-      onClick={() => {
-        setLocation(config.path);
-      }}
-      hoverEvents={false}
-      speed={0.3}
-      position={position as THREE.Vector3}
       {...props}
+      visible={location === home || location === config.path}
     >
-      {children}
-    </Portal>
+      <Plane
+        args={[frameWidth, frameHeight]}
+        position={[position[0], position[1], position[2] - 0.01]}
+      >
+        <meshBasicMaterial color={"maroon"} />
+      </Plane>
+      <Portal
+        geometry={geometry}
+        path={config.path}
+        onClick={() => {
+          if (location !== home) {
+            return;
+          }
+
+          setLocation(config.path);
+        }}
+        hoverEvents={false}
+        speed={0.3}
+        position={position as THREE.Vector3}
+      >
+        {children}
+      </Portal>
+    </group>
   );
 }
 
@@ -99,17 +132,16 @@ function Rig({
   const ref = useRef<THREE.Group>(null);
 
   useEffect(() => {
-    console.log("here");
-    scroll.el.scrollTo({ top: 1, behavior: "smooth" });
-  }, [location, scroll.el]);
+    if (location !== home) {
+      scroll.el.scrollTo({ top: 1, behavior: "smooth" });
+    }
+  }, [home, location, scroll.el]);
 
   useFrame((state, delta) => {
-    easing.damp3(
-      state.camera.position,
-      location === home ? [10 * scroll.offset, 0, 5] : [0, 0, 5],
-      0.3,
-      delta
-    );
+    if (location !== home) {
+      return;
+    }
+    easing.damp3(state.camera.position, [scroll.offset, 0, 5], 0.3, delta);
 
     state.events.update();
   });
@@ -117,23 +149,28 @@ function Rig({
   return <group ref={ref} {...props} />;
 }
 
-function Items({ w = 2, gap = 0.15 }) {
+function Items({ w = 4, gap = 0.15, position }) {
   const configs = useCarouselStore((state) => state.configs);
   const xW = w + gap;
-  const home = "/projects";
 
   const [location, setLocation] = useLocation();
+  const frameConfig = {
+    frameWidth: 2.05,
+    frameHeight: 2.05,
+  };
 
   return (
-    <ScrollControls pages={3}>
-      <Rig location={location} home={home}>
+    <group>
+      <Rig location={location} home={home} position={position}>
         {configs.map((e, i) => (
           <Item
+            {...frameConfig}
             location={location}
             setLocation={setLocation}
             config={e}
             key={"carousel-three-item-" + i}
             position={[xW * i, 0, 0]}
+            home={home}
           >
             <ThreeExile path={e.path} />
           </Item>
@@ -145,6 +182,6 @@ function Items({ w = 2, gap = 0.15 }) {
           <HtmlExile path={e.path} key={"carousel-html-item-" + i} />
         ))}
       </Scroll>
-    </ScrollControls>
+    </group>
   );
 }

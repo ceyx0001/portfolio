@@ -54,9 +54,7 @@ export const Portal = forwardRef<THREE.Mesh, PortalProps>(
 
       easing.damp3(
         innerMeshRef.current.position,
-        match
-          ? [position[0], position[1], position[2]]
-          : [targetPosition[0], targetPosition[1], targetPosition[2]],
+        [targetPosition[0], targetPosition[1], targetPosition[2]],
         speed
       );
 
@@ -73,7 +71,7 @@ export const Portal = forwardRef<THREE.Mesh, PortalProps>(
         {...props}
         onClick={(e) => {
           e.stopPropagation();
-          if (hoverEvents) {
+          if (hoverEvents && hover) {
             setHover(false);
           }
           if (onClick) {

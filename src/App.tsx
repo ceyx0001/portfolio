@@ -2,9 +2,7 @@ import { Canvas } from "@react-three/fiber";
 import { IntroductionScene } from "./scenes/Introduction";
 import { Suspense } from "react";
 import { Loading } from "./components/Loading";
-import { Perf } from 'r3f-perf'
-import { CarouselScene } from "./scenes/Carousel";
-import { Preload } from "@react-three/drei";
+import { Perf } from "r3f-perf";
 
 export default function App() {
   return (
@@ -16,7 +14,7 @@ export default function App() {
       >
         <Perf />
         <Suspense fallback={<Loading />}>
-          <CarouselScene />
+          <IntroductionScene />
         </Suspense>
       </Canvas>
     </div>
