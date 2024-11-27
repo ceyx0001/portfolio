@@ -19,7 +19,7 @@ export const Menu = forwardRef<THREE.Group, GroupProps>(({ ...props }, ref) => {
   const frontZ = -0.1;
   const behindZ = -5.2;
   const orbPos = [0, -4, 0] as [number, number, number];
-  const clock = useThree((state) => state.clock);
+  const { camera, clock } = useThree();
   const buttons = [
     {
       text: "About",
@@ -44,6 +44,7 @@ export const Menu = forwardRef<THREE.Group, GroupProps>(({ ...props }, ref) => {
   useEffect(() => {
     let timeout: NodeJS.Timeout;
     if (location === "/menu") {
+      camera.position.set(0,0,5);
       timeout = setTimeout(() => {
         setVisible(true);
       }, 500);
@@ -58,7 +59,7 @@ export const Menu = forwardRef<THREE.Group, GroupProps>(({ ...props }, ref) => {
     };
   }, [clock, location, viewport.height]);
 
-  const radius = 4.5;
+  const radius = 4;
   const offset = Math.PI / 4.5;
 
   useFrame((_, delta) => {

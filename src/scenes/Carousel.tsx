@@ -1,8 +1,4 @@
-import {
-  Scroll,
-  useScroll,
-  Plane,
-} from "@react-three/drei";
+import { Scroll, useScroll, Plane } from "@react-three/drei";
 import { GroupProps, useFrame } from "@react-three/fiber";
 import { easing } from "maath";
 import { ReactNode, useEffect, useMemo, useRef } from "react";
@@ -155,6 +151,7 @@ function Rig({
 
 function Items({ w = 4, gap = 0.15, position }) {
   const configs = useCarouselStore((state) => state.configs);
+  const scroll = useScroll();
   const xW = w + gap;
 
   const [location, setLocation] = useLocation();
@@ -181,11 +178,13 @@ function Items({ w = 4, gap = 0.15, position }) {
         ))}
       </Rig>
 
-      <Scroll html>
-        {configs.map((e, i) => (
-          <group key={"carousel-html-item-" + i}>{e.html}</group>
-        ))}
-      </Scroll>
+      {scroll && (
+        <Scroll html>
+          {configs.map((e, i) => (
+            <group key={"carousel-html-item-" + i}>{e.html}</group>
+          ))}
+        </Scroll>
+      )}
     </group>
   );
 }
