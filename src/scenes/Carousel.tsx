@@ -1,12 +1,11 @@
 import {
   Scroll,
   useScroll,
-  ScrollControlsProps,
   Plane,
 } from "@react-three/drei";
 import { GroupProps, useFrame } from "@react-three/fiber";
 import { easing } from "maath";
-import { useEffect, useMemo, useRef } from "react";
+import { ReactNode, useEffect, useMemo, useRef } from "react";
 import { create } from "zustand";
 import * as THREE from "three";
 import { HtmlExile, ThreeExile } from "./projects/Exile";
@@ -18,7 +17,8 @@ const home = "/menu/projects";
 
 type ItemConfig = {
   path: string;
-  scrollConfig: Omit<ScrollControlsProps, "children">;
+  three: ReactNode;
+  html: ReactNode;
 };
 
 type CarouselState = {
@@ -27,7 +27,11 @@ type CarouselState = {
 
 const useCarouselStore = create<CarouselState>(() => ({
   configs: [
-    { path: `${home}/exile`, scrollConfig: { pages: 3 } },
+    {
+      path: `${home}/exile`,
+      three: <ThreeExile path={`${home}/exile`} />,
+      html: <HtmlExile path={`${home}/exile`} />,
+    },
   ],
 }));
 
@@ -172,14 +176,14 @@ function Items({ w = 4, gap = 0.15, position }) {
             position={[xW * i, 0, 0]}
             home={home}
           >
-            <ThreeExile path={e.path} />
+            {e.three}
           </Item>
         ))}
       </Rig>
 
       <Scroll html>
         {configs.map((e, i) => (
-          <HtmlExile path={e.path} key={"carousel-html-item-" + i} />
+          <group key={"carousel-html-item-" + i}>{e.html}</group>
         ))}
       </Scroll>
     </group>

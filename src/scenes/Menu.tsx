@@ -66,7 +66,7 @@ export const Menu = forwardRef<THREE.Group, GroupProps>(({ ...props }, ref) => {
       return;
     }
 
-    const speed = Math.min(3, (clock.elapsedTime / 3) * 3);
+    const speed = Math.min(3, (clock.elapsedTime / 10) * 3);
     if (clock.elapsedTime * speed >= offset + Math.PI) {
       easing.damp3(carouselRef.current.position, [0, 0, -radius], 0.1, delta);
       return;

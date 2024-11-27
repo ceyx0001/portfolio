@@ -12,7 +12,6 @@ export default function App() {
         onCreated={(state) => (state.gl.localClippingEnabled = true)}
         dpr={1}
       >
-        <Perf />
         <Suspense fallback={<Loading />}>
           <IntroductionScene />
         </Suspense>
