@@ -57,7 +57,7 @@ export const Menu = forwardRef<THREE.Group, GroupProps>(({ ...props }, ref) => {
     return () => {
       clearTimeout(timeout);
     };
-  }, [clock, location, viewport.height]);
+  }, [camera.position, clock, location, viewport.height]);
 
   const radius = 4;
   const offset = Math.PI / 4.5;

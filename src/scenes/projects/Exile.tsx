@@ -101,6 +101,11 @@ export const HtmlExile: HtmlProject = (props) => {
           </SlideSpan>
         </div>
         <div>
+          <SlideSpan {...config}>
+            <video controls  style={{ width: "100%" }}>
+              <source src={"/projects/exile/1.mp4"} type="video/mp4" />
+            </video>
+          </SlideSpan>
           <ul
             style={{
               padding: "0rem",
@@ -164,7 +169,11 @@ export const HtmlExile: HtmlProject = (props) => {
             </p>
           </>
         </SlideSpan>
-      
+        <SlideSpan {...config}>
+          <video controls  style={{ width: "100%", paddingLeft: "12rem", paddingTop:" 2rem" }}>
+            <source src={"/projects/exile/2.mp4"} type="video/mp4" />
+          </video>
+        </SlideSpan>
       </div>
 
       <div
@@ -210,6 +219,9 @@ export const HtmlExile: HtmlProject = (props) => {
               gap: "1rem",
             }}
           >
+            <video controls  style={{ width: "85%" }}>
+              <source src={"/projects/exile/3.mp4"} type="video/mp4" />
+            </video>
           </div>
           <div
             style={{
@@ -222,6 +234,9 @@ export const HtmlExile: HtmlProject = (props) => {
               gap: "1rem",
             }}
           >
+            <video controls  style={{ width: "85%" }}>
+              <source src={"/projects/exile/4.mp4"} type="video/mp4" />
+            </video>
           </div>
         </SlideSpan>
       </div>
