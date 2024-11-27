@@ -137,7 +137,7 @@ export const Menu = forwardRef<THREE.Group, GroupProps>(({ ...props }, ref) => {
         </group>
       </Clipping>
 
-      <CarouselScene ref={carouselRef} />
+      <CarouselScene ref={carouselRef} position={[0, 0, -1]} />
       <Orb animate={true} scale={0.25} position={orbPos} />
     </group>
   );

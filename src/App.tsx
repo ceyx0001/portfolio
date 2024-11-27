@@ -2,7 +2,6 @@ import { Canvas } from "@react-three/fiber";
 import { IntroductionScene } from "./scenes/Introduction";
 import { Suspense } from "react";
 import { Loading } from "./components/Loading";
-import { Perf } from "r3f-perf";
 
 export default function App() {
   return (
