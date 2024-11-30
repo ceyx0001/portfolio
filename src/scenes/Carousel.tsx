@@ -1,4 +1,4 @@
-import { Scroll, useScroll, Plane } from "@react-three/drei";
+import { Scroll, useScroll, Plane, Text, Image } from "@react-three/drei";
 import { GroupProps, useFrame } from "@react-three/fiber";
 import { easing } from "maath";
 import { ReactNode, useEffect, useMemo, useRef } from "react";
@@ -13,6 +13,8 @@ const home = "/menu/projects";
 
 type ItemConfig = {
   path: string;
+  title: string;
+  thumbPath: string;
   three: ReactNode;
   html: ReactNode;
 };
@@ -25,6 +27,8 @@ const useCarouselStore = create<CarouselState>(() => ({
   configs: [
     {
       path: `${home}/exile`,
+      title: "Exile Emporium",
+      thumbPath: "/projects/exile/Mirror_of_Kalandra.png",
       three: <ThreeExile path={`${home}/exile`} />,
       html: <HtmlExile path={`${home}/exile`} />,
     },
@@ -103,6 +107,21 @@ function Item({
       >
         <meshBasicMaterial color={"maroon"} />
       </Plane>
+      <group visible={location !== config.path}>
+        <Text
+          font="/fonts/roboto-mono.woff"
+          scale={[0.4, 0.4, 0]}
+          position={[0, -1.75, 0]}
+        >
+          {config.title}
+        </Text>
+        <Image
+          url={config.thumbPath}
+          transparent
+          toneMapped
+          position={[0, 0, 0.1]}
+        />
+      </group>
       <Portal
         geometry={geometry}
         path={config.path}

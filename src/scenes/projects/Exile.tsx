@@ -2,13 +2,13 @@ import { RotatingText } from "../../components/effects/web/RotatingText";
 import { SlideSpan } from "../../components/effects/web/SlideSpan";
 import { useEffect, useRef } from "react";
 import css from "../../styles.module.css";
-import { HtmlProject, ThreeProject } from "../../types";
+import { HtmlProject, ThreeProject, ThreeProjectProps } from "../../types";
 import { WaveMaterial, WaveMaterialProps } from "../../shaders/WaveMaterial";
 import { extend, MeshProps, useFrame } from "@react-three/fiber";
 import { useLocation } from "wouter";
 extend({ WaveMaterial });
 
-export const ThreeExile: ThreeProject = (projectProps) => {
+export const ThreeExile: ThreeProject = (projectProps: ThreeProjectProps) => {
   const uTime = useRef(0);
   const matRef = useRef<WaveMaterialProps>(null);
 
@@ -147,7 +147,7 @@ export const HtmlExile: HtmlProject = (props) => {
           <>
             <h3>Data aggregation</h3>
             <p>
-              The app uses data scraping techniques to extract and analyze
+              Data scraping is utilized to extract and analyze
               information from game forums, enabling the cataloging of
               comprehensive and accurate results.
             </p>
@@ -156,7 +156,7 @@ export const HtmlExile: HtmlProject = (props) => {
           <>
             <h3>Searching</h3>
             <p>
-              With the powerful search feature, users can easily and quickly
+              By leveraging full text search and custom searching algorithms, users can easily and quickly
               find items with advanced based on item type, affixes, and more.
             </p>
           </>
@@ -165,7 +165,7 @@ export const HtmlExile: HtmlProject = (props) => {
             <h3>Design</h3>
             <p>
               From elegant hover effects and smooth animations to seamless
-              navigation, for a simple yet effective experience.
+              navigation, the design app delivers a simple yet effective experience.
             </p>
           </>
         </SlideSpan>
