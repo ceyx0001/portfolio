@@ -234,7 +234,7 @@ export const AboutScene = forwardRef<
   const blindsRef = useRef<THREE.Mesh>(null);
   const innerRef = useRef<THREE.Group>(null);
   const { camera } = useThree();
-  useImperativeHandle(outerRef, () => innerRef.current!);
+  useImperativeHandle(outerRef, () => innerRef.current!, []);
 
   // reset scene upon location change
   useEffect(() => {

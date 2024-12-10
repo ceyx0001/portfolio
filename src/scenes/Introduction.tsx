@@ -5,7 +5,10 @@ import { Menu } from "./Menu";
 import { DriftingText } from "../components/effects/DriftingText";
 import { useLocation } from "wouter";
 import * as THREE from "three";
-import { ScrollControls, useGLTF } from "@react-three/drei";
+import {
+  ScrollControls,
+  useGLTF,
+} from "@react-three/drei";
 
 /*
 author: jemepousse (https://sketchfab.com/jemepousse)
@@ -79,6 +82,7 @@ export const IntroductionScene = forwardRef<THREE.Group, GroupProps>(
             position={portalPosition}
           >
             <Menu />
+            <color attach="background" args={["black"]} />
           </Portal>
         </ScrollControls>
       </group>

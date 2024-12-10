@@ -1,5 +1,8 @@
 import * as THREE from "three";
-import { Circle, PerspectiveCamera, Text } from "@react-three/drei";
+import {
+  PerspectiveCamera,
+  Text,
+} from "@react-three/drei";
 import { Orb } from "../components/Orb";
 import { useLocation } from "wouter";
 import { forwardRef, useEffect, useRef, useState } from "react";
@@ -44,7 +47,7 @@ export const Menu = forwardRef<THREE.Group, GroupProps>(({ ...props }, ref) => {
   useEffect(() => {
     let timeout: NodeJS.Timeout;
     if (location === "/menu") {
-      camera.position.set(0,0,5);
+      camera.position.set(0, 0, 5);
       timeout = setTimeout(() => {
         setVisible(true);
       }, 500);
@@ -118,10 +121,6 @@ export const Menu = forwardRef<THREE.Group, GroupProps>(({ ...props }, ref) => {
           </Text>
         ))}
       </group>
-
-      <Circle args={[50]} position={[0, 0, -20]}>
-        <meshBasicMaterial color="black" />
-      </Circle>
 
       <Clipping
         width={viewport.width}

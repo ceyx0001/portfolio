@@ -5,7 +5,6 @@ import css from "../../styles.module.css";
 import { HtmlProject, ThreeProject, ThreeProjectProps } from "../../types";
 import { WaveMaterial, WaveMaterialProps } from "../../shaders/WaveMaterial";
 import { extend, MeshProps, useFrame } from "@react-three/fiber";
-import { useLocation } from "wouter";
 extend({ WaveMaterial });
 
 export const ThreeExile: ThreeProject = (projectProps: ThreeProjectProps) => {
@@ -47,13 +46,11 @@ export const ThreeExile: ThreeProject = (projectProps: ThreeProjectProps) => {
   );
 };
 
-export const HtmlExile: HtmlProject = (props) => {
-  const [location] = useLocation();
-
+export const HtmlExile: HtmlProject = () => {
   const leftAnchor = "8vw";
   const config = { start: "translateY(1000px)", end: "translateY(0px)" };
 
-  const HtmlContent = () => (
+  return (
     <div
       style={{
         display: "flex",
@@ -102,7 +99,7 @@ export const HtmlExile: HtmlProject = (props) => {
         </div>
         <div>
           <SlideSpan {...config}>
-            <video controls  style={{ width: "100%" }}>
+            <video controls style={{ width: "100%" }}>
               <source src={"/projects/exile/1.mp4"} type="video/mp4" />
             </video>
           </SlideSpan>
@@ -143,21 +140,22 @@ export const HtmlExile: HtmlProject = (props) => {
         }}
         className={`${css.projectText}`}
       >
-        <SlideSpan {...config} style={{width: "80%"}}>
+        <SlideSpan {...config} style={{ width: "80%" }}>
           <>
             <h3>Data aggregation</h3>
             <p>
-              Data scraping is utilized to extract and analyze
-              information from game forums, enabling the cataloging of
-              comprehensive and accurate results.
+              Data scraping is utilized to extract and analyze information from
+              game forums, enabling the cataloging of comprehensive and accurate
+              results.
             </p>
           </>
 
           <>
             <h3>Searching</h3>
             <p>
-              By leveraging full text search and custom searching algorithms, users can easily and quickly
-              find items with advanced based on item type, affixes, and more.
+              By leveraging full text search and custom searching algorithms,
+              users can easily and quickly find items with advanced based on
+              item type, affixes, and more.
             </p>
           </>
 
@@ -165,12 +163,16 @@ export const HtmlExile: HtmlProject = (props) => {
             <h3>Design</h3>
             <p>
               From elegant hover effects and smooth animations to seamless
-              navigation, the design app delivers a simple yet effective experience.
+              navigation, the design app delivers a simple yet effective
+              experience.
             </p>
           </>
         </SlideSpan>
         <SlideSpan {...config}>
-          <video controls  style={{ width: "100%", paddingLeft: "12rem", paddingTop:" 2rem" }}>
+          <video
+            controls
+            style={{ width: "100%", paddingLeft: "12rem", paddingTop: " 2rem" }}
+          >
             <source src={"/projects/exile/2.mp4"} type="video/mp4" />
           </video>
         </SlideSpan>
@@ -219,7 +221,7 @@ export const HtmlExile: HtmlProject = (props) => {
               gap: "1rem",
             }}
           >
-            <video controls  style={{ width: "85%" }}>
+            <video controls style={{ width: "85%" }}>
               <source src={"/projects/exile/3.mp4"} type="video/mp4" />
             </video>
           </div>
@@ -234,7 +236,7 @@ export const HtmlExile: HtmlProject = (props) => {
               gap: "1rem",
             }}
           >
-            <video controls  style={{ width: "85%" }}>
+            <video controls style={{ width: "85%" }}>
               <source src={"/projects/exile/4.mp4"} type="video/mp4" />
             </video>
           </div>
@@ -242,6 +244,4 @@ export const HtmlExile: HtmlProject = (props) => {
       </div>
     </div>
   );
-
-  return location === props.path ? HtmlContent() : null;
 };

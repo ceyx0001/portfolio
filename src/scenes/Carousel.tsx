@@ -8,6 +8,7 @@ import { HtmlExile, ThreeExile } from "./projects/Exile";
 import { Portal } from "../components/effects/Portal";
 import { useLocation } from "wouter";
 import React from "react";
+import { HtmlSanctuary, ThreeSanctuary } from "./projects/Sanctuary";
 
 const home = "/menu/projects";
 
@@ -31,6 +32,13 @@ const useCarouselStore = create<CarouselState>(() => ({
       thumbPath: "/projects/exile/Mirror_of_Kalandra.png",
       three: <ThreeExile path={`${home}/exile`} />,
       html: <HtmlExile path={`${home}/exile`} />,
+    },
+    {
+      path: `${home}/sanctuary`,
+      title: "Sanctuary",
+      thumbPath: "/projects/sanctuary/sanctuary.png",
+      three: <ThreeSanctuary path={`${home}/sanctuary`} />,
+      html: <HtmlSanctuary path={`${home}/sanctuary`} />,
     },
   ],
 }));
@@ -111,7 +119,7 @@ function Item({
         <Text
           font="/fonts/roboto-mono.woff"
           scale={[0.4, 0.4, 0]}
-          position={[0, -1.75, 0]}
+          position={[position[0], position[1] - 1.5, position[2]]}
         >
           {config.title}
         </Text>
@@ -119,7 +127,7 @@ function Item({
           url={config.thumbPath}
           transparent
           toneMapped
-          position={[0, 0, 0.1]}
+          position={[position[0], position[1], position[2]]}
         />
       </group>
       <Portal
@@ -133,7 +141,7 @@ function Item({
           setLocation(config.path);
         }}
         hoverEvents={false}
-        speed={0.3}
+        speed={0.1}
         position={position as THREE.Vector3}
       >
         {children}
@@ -200,7 +208,9 @@ function Items({ w = 4, gap = 0.15, position }) {
       {scroll && (
         <Scroll html>
           {configs.map((e, i) => (
-            <group key={"carousel-html-item-" + i}>{e.html}</group>
+            <group key={"carousel-html-item-" + i}>
+              {location === e.path && e.html}
+            </group>
           ))}
         </Scroll>
       )}

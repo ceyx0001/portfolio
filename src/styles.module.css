@@ -31,7 +31,7 @@
   padding: 0;
   line-height: 2rem;
   position: absolute;
-  font-size: 1.25rem; 
+  font-size: 1.25rem;
 }
 
 .projectHeader {
@@ -42,9 +42,10 @@
 }
 
 .aArrow {
-  text-decoration: none; 
-  color: white; 
-  transition: all 0.3s ease; 
+  text-decoration: none;
+  transition: all 0.3s ease;
+  color: whitesmoke;
+  --hover-color: sandybrown;
 }
 
 .aArrow::after {
@@ -55,9 +56,14 @@
 }
 
 .aArrow:hover {
-  color: sandybrown; 
+  color: var(--hover-color);
 }
 
 .aArrow:hover::after {
-  opacity: 1; 
+  opacity: 1;
+}
+
+/* Additional class to switch to black */
+.aArrowBlackHover:hover {
+  --hover-color: black;
 }
