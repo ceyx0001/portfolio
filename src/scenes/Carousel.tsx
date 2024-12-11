@@ -127,7 +127,7 @@ function Item({
           url={config.thumbPath}
           transparent
           toneMapped
-          position={[position[0], position[1], position[2]]}
+          position={[position[0], position[1], position[2] + 0.1]}
         />
       </group>
       <Portal
