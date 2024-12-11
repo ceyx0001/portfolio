@@ -1,8 +1,5 @@
 import * as THREE from "three";
-import {
-  PerspectiveCamera,
-  Text,
-} from "@react-three/drei";
+import { Html, PerspectiveCamera, Text } from "@react-three/drei";
 import { Orb } from "../components/Orb";
 import { useLocation } from "wouter";
 import { forwardRef, useEffect, useRef, useState } from "react";
@@ -11,6 +8,7 @@ import { Clipping } from "../components/effects/Clipping";
 import { AboutScene } from "./About";
 import { CarouselScene } from "./Carousel";
 import { easing } from "maath";
+import css from "../styles.module.css";
 
 export const Menu = forwardRef<THREE.Group, GroupProps>(({ ...props }, ref) => {
   const [location, setLocation] = useLocation();
@@ -94,6 +92,48 @@ export const Menu = forwardRef<THREE.Group, GroupProps>(({ ...props }, ref) => {
 
   return (
     <group ref={ref} {...props}>
+      {(location === "/menu" || location === "/") && (
+        <Html style={{ width: "100%", background: "white" }}>
+          <span
+            style={{
+              fontSize: "1rem",
+              color: "#ac9a51",
+              position: "absolute",
+              left: "26vw",
+              top: "42vh",
+              width: "22vw",
+            }}
+          >
+            An imagining of playful software in React and Three
+          </span>
+          <div
+            style={{
+              background: "#ac9a51",
+              position: "absolute",
+              left: "-41vw",
+              top: "43.5vh",
+              width: "5rem",
+              height: "0.2rem",
+            }}
+          />
+          <a
+            href="https://github.com/ceyx0001/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              fontSize: "1.5rem",
+              color: "#ac9a51",
+              position: "absolute",
+              left: "-47vw",
+              top: "42vh",
+            }}
+            className={`${css.aArrow} ${css.aArrowBlackHover}`}
+          >
+            Github
+          </a>
+        </Html>
+      )}
+
       <group visible={location === "/menu" && visible}>
         {buttons.map((button, index) => (
           <Text

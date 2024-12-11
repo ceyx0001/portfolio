@@ -45,6 +45,7 @@ const useCarouselStore = create<CarouselState>(() => ({
 
 export const CarouselScene = React.forwardRef<THREE.Group, GroupProps>(
   (props, ref) => {
+    const [location, setLocation] = useLocation();
     const configs = useCarouselStore((state) => state.configs);
     const position = props.position
       ? [
@@ -56,6 +57,17 @@ export const CarouselScene = React.forwardRef<THREE.Group, GroupProps>(
     return (
       <group {...props} ref={ref}>
         <Items position={position} />
+        <Text
+          visible={location === "/menu/projects"}
+          font="/fonts/roboto-mono.woff"
+          onClick={() => {
+            setLocation("/menu");
+          }}
+          position={[-12, 5.5, 0]}
+          scale={0.5}
+        >
+          {"<"} back
+        </Text>
       </group>
     );
   }

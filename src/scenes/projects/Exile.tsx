@@ -5,6 +5,7 @@ import css from "../../styles.module.css";
 import { HtmlProject, ThreeProject, ThreeProjectProps } from "../../types";
 import { WaveMaterial, WaveMaterialProps } from "../../shaders/WaveMaterial";
 import { extend, MeshProps, useFrame } from "@react-three/fiber";
+import { useLocation } from "wouter";
 extend({ WaveMaterial });
 
 export const ThreeExile: ThreeProject = (projectProps: ThreeProjectProps) => {
@@ -49,6 +50,7 @@ export const ThreeExile: ThreeProject = (projectProps: ThreeProjectProps) => {
 export const HtmlExile: HtmlProject = () => {
   const leftAnchor = "8vw";
   const config = { start: "translateY(1000px)", end: "translateY(0px)" };
+  const [, setLocation] = useLocation();
 
   return (
     <div
@@ -198,7 +200,13 @@ export const HtmlExile: HtmlProject = () => {
               players to easily trade in-game and alerting item owners.
             </p>
           </div>
-          <div>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "4rem"
+            }}
+          >
             <h1>
               <a
                 href="https://mirror-service-catalog.vercel.app/"
@@ -209,6 +217,15 @@ export const HtmlExile: HtmlProject = () => {
                 Visit
               </a>
             </h1>
+            <a
+              className={`${css.trailsBackBtn}`}
+              style={{ color: "white", fontSize: "2rem", cursor: "pointer" }}
+              onClick={() => {
+                setLocation("/menu/projects");
+              }}
+            >
+              {"<"} back
+            </a>
           </div>
           <div
             style={{

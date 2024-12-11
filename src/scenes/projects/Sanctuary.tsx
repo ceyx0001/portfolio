@@ -220,6 +220,7 @@ export const ThreeSanctuary: ThreeProject = (
 
 export const HtmlSanctuary: HtmlProject = () => {
   const config = { start: "translateY(1000px)", end: "translateY(0px)" };
+  const [, setLocation] = useLocation();
 
   return (
     <div
@@ -357,6 +358,7 @@ export const HtmlSanctuary: HtmlProject = () => {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
+              justifyContent: "center",
             }}
           >
             <h1>
@@ -369,7 +371,7 @@ export const HtmlSanctuary: HtmlProject = () => {
                 Try it out
               </a>
             </h1>
-            <h2 style={{ marginTop: "3rem" }}>
+            <h2>
               <a
                 href="https://gx.games/games/zvvevg/sanctuary/tracks/59d1eeef-8966-4309-8f5a-fe869942cd08/"
                 target="_blank"
@@ -379,6 +381,15 @@ export const HtmlSanctuary: HtmlProject = () => {
                 Source code
               </a>
             </h2>
+            <a
+              className={`${css.trailsBackBtn}`}
+              style={{ color: "white", fontSize: "2rem", cursor: "pointer", paddingRight: "2rem", paddingTop: "4rem" }}
+              onClick={() => {
+                setLocation("/menu/projects");
+              }}
+            >
+              {"<"} back
+            </a>
           </div>
         </SlideSpan>
       </div>
