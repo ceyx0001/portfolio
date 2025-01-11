@@ -142,6 +142,7 @@ export const ThreeSanctuary: ThreeProject = (
             scale={[2.2, 2.2, 0]}
             play={location === projectProps.path}
             geometry={videoGeometry}
+            position={[0,0,0.1]}
           />
         </RigidBody>
 
