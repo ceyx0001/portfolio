@@ -218,7 +218,7 @@ export function Band({
                   />
                   <color attach="background" args={["black"]} />
                   <Text
-                    font={"/fonts/roboto-mono.woff"}
+                    font={"/fonts/roboto-mono.ttf"}
                     ref={text}
                     fontSize={0.5}
                     textAlign="center"

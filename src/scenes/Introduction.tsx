@@ -30,7 +30,11 @@ export const IntroductionScene = forwardRef<THREE.Group, GroupProps>(
     const portalPath = "/menu";
     const cityRef = useRef<THREE.Group>(null);
     const { nodes } = useGLTF("/models/city.glb");
-    useFrame(() => (cityRef.current!.rotation.y += 0.0001));
+    useFrame(() => {
+      if (cityRef.current) {
+        cityRef.current.rotation.y += 0.0001;
+      }
+    });
 
     return (
       <group ref={ref}>

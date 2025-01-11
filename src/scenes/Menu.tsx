@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Html, PerspectiveCamera, Text } from "@react-three/drei";
+import { PerspectiveCamera, Text } from "@react-three/drei";
 import { Orb } from "../components/Orb";
 import { useLocation } from "wouter";
 import { forwardRef, useEffect, useRef, useState } from "react";
@@ -8,7 +8,6 @@ import { Clipping } from "../components/effects/Clipping";
 import { AboutScene } from "./About";
 import { CarouselScene } from "./Carousel";
 import { easing } from "maath";
-import css from "../styles.module.css";
 
 export const Menu = forwardRef<THREE.Group, GroupProps>(({ ...props }, ref) => {
   const [location, setLocation] = useLocation();
@@ -92,56 +91,16 @@ export const Menu = forwardRef<THREE.Group, GroupProps>(({ ...props }, ref) => {
 
   return (
     <group ref={ref} {...props}>
-      {(location === "/menu" || location === "/") && (
-        <Html style={{ width: "100%", background: "white" }}>
-          <span
-            style={{
-              fontSize: "1rem",
-              color: "#ac9a51",
-              position: "absolute",
-              left: "26vw",
-              top: "42vh",
-              width: "22vw",
-            }}
-          >
-            An imagining of playful software in React and Three
-          </span>
-          <div
-            style={{
-              background: "#ac9a51",
-              position: "absolute",
-              left: "-41vw",
-              top: "43.5vh",
-              width: "5rem",
-              height: "0.2rem",
-            }}
-          />
-          <a
-            href="https://github.com/ceyx0001/"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              fontSize: "1.5rem",
-              color: "#ac9a51",
-              position: "absolute",
-              left: "-47vw",
-              top: "42vh",
-            }}
-            className={`${css.aArrow} ${css.aArrowBlackHover}`}
-          >
-            Github
-          </a>
-        </Html>
-      )}
-
       <group visible={location === "/menu" && visible}>
         {buttons.map((button, index) => (
           <Text
             key={index + "front"}
-            font="/fonts/roboto-mono.woff"
+            font="/fonts/roboto-mono.ttf"
             position={[0, (0.75 - index) * 2, frontZ]}
             color={"gray"}
             material-opacity={0.5}
+            material-transparent={true}
+            material-toneMapped={false}
             onClick={button.handler}
             fontSize={1}
           >
@@ -152,15 +111,18 @@ export const Menu = forwardRef<THREE.Group, GroupProps>(({ ...props }, ref) => {
         {buttons.map((button, index) => (
           <Text
             key={index + "behind"}
-            font="/fonts/roboto-mono.woff"
+            font="/fonts/roboto-mono.ttf"
             position={[0, (0.75 - index) * 4, behindZ]}
             color={"orange"}
+            material-toneMapped={false}
             fontSize={2}
           >
             {button.text}
           </Text>
         ))}
       </group>
+
+      <Orb animate={true} scale={0.25} position={orbPos} />
 
       <Clipping
         width={viewport.width}
@@ -177,8 +139,13 @@ export const Menu = forwardRef<THREE.Group, GroupProps>(({ ...props }, ref) => {
         </group>
       </Clipping>
 
-      <CarouselScene ref={carouselRef} position={[0, 0, -1]} />
-      <Orb animate={true} scale={0.25} position={orbPos} />
+      <CarouselScene
+        ref={carouselRef}
+        position={[0, 0, -1]}
+        onClick={() => {
+          if (location !== "/menu/projects") return
+        }}
+      />
     </group>
   );
 });

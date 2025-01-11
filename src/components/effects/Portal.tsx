@@ -1,4 +1,9 @@
-import { useRef, useImperativeHandle, useState, forwardRef } from "react";
+import {
+  useRef,
+  useImperativeHandle,
+  useState,
+  forwardRef,
+} from "react";
 import { MeshProps, ThreeEvent, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { MeshPortalMaterial, Outlines, useCursor } from "@react-three/drei";
@@ -40,14 +45,10 @@ export const Portal = forwardRef<THREE.Mesh, PortalProps>(
     useImperativeHandle(outerMeshRef, () => innerMeshRef.current!, []);
 
     useFrame((_, delta) => {
-      if (!innerMeshRef.current || !portalRef.current) {
-        return;
-      }
-
       const damping = easing.damp(
         portalRef.current,
         "blend",
-        match ? 1 : 0,
+        match ? 0.9999999 : 0.0000001,
         speed,
         delta
       );
@@ -89,7 +90,13 @@ export const Portal = forwardRef<THREE.Mesh, PortalProps>(
           }
         }}
       >
-        <MeshPortalMaterial ref={portalRef} events={match}>
+        <MeshPortalMaterial
+          ref={portalRef}
+          events={match}
+          side={THREE.DoubleSide}
+          toneMapped={true}
+          blend={0}
+        >
           {children}
         </MeshPortalMaterial>
         <Outlines visible={hover} thickness={1} color="#fba56a" />

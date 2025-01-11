@@ -1,11 +1,5 @@
 import { HtmlProject, ThreeProject, ThreeProjectProps } from "../../types";
-import {
-  Environment,
-  PerspectiveCamera,
-  Plane,
-  Sphere,
-  Tetrahedron,
-} from "@react-three/drei";
+import { Plane, Sphere, Tetrahedron } from "@react-three/drei";
 import * as THREE from "three";
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
@@ -16,6 +10,7 @@ import { RotatingText } from "../../components/effects/web/RotatingText";
 import { SlideSpan } from "../../components/effects/web/SlideSpan";
 import css from "../../styles.module.css";
 import { Video } from "../../components/effects/Video";
+import { Pointer } from "../../components/Pointer";
 
 type BaubleProps = {
   vec?: THREE.Vector3;
@@ -35,8 +30,8 @@ const Bauble = ({
   const ref = useRef<RapierRigidBody>(null);
   const position = useMemo(() => new THREE.Vector3(), []);
   const [location] = useLocation();
-  const innerRadius = 12;
-  const outerRadius = 40;
+  const innerRadius = 8;
+  const outerRadius = 1000;
   const attractionStrength = -6;
   const repulsionStrength = 5;
 
@@ -100,72 +95,53 @@ export const ThreeSanctuary: ThreeProject = (
   projectProps: ThreeProjectProps
 ) => {
   const [location] = useLocation();
-  const wallRef = useRef<RapierRigidBody>(null);
-  const videoRef = useRef<RapierRigidBody>(null);
-  const cameraRef = useRef<THREE.PerspectiveCamera>(null);
-  const angle = useRef(0);
-  const { offset, epoxyMaterial, baubles } = useMemo(() => {
+  const backgroundRef = useRef<THREE.Mesh>(null);
+  const { epoxyMaterial, baubles, videoGeometry } = useMemo(() => {
     return {
-      offset: new THREE.Vector3(0, 0, -40),
       epoxyMaterial: new THREE.MeshPhysicalMaterial({
-        transmission: 0.95,
+        transmission: 0.5,
         roughness: 0,
-        thickness: 1,
+        thickness: 0.5,
         ior: 1,
         clearcoat: 1,
         attenuationDistance: 1,
         color: "#c0a0a0",
         emissive: "#518eff",
-        emissiveIntensity: 0.3,
+        emissiveIntensity: 0.5,
       }),
       baubles: [...Array(50)].map(() => ({
         scale: [0.75, 0.75, 1, 1, 1.25][Math.floor(Math.random() * 5)],
       })),
+      videoGeometry: new THREE.PlaneGeometry(16, 9),
     };
   }, []);
 
-  const updateRb = (rb: RapierRigidBody, camera: THREE.Camera) => {
-    rb.setTranslation(camera.localToWorld(offset.clone()), true);
-    rb.setRotation(camera.quaternion, true);
-  };
-
   useFrame(() => {
-    if (location !== projectProps.path) {
-      return;
+    if (backgroundRef) {
+      backgroundRef.current.rotation.z += 0.001;
     }
-
-    if (wallRef.current && videoRef.current) {
-      updateRb(wallRef.current, cameraRef.current);
-      updateRb(videoRef.current, cameraRef.current);
-    }
-
-    angle.current += 0.0008;
-    const radius = 20;
-    cameraRef.current.position.x = radius * Math.sin(angle.current);
-    cameraRef.current.position.z = radius * Math.cos(angle.current);
-    cameraRef.current.position.y = 0;
-    cameraRef.current.lookAt(0, 0, 0);
   });
 
   return (
     <group {...projectProps}>
       <Physics gravity={[0, 0, 0]}>
-        <RigidBody ref={wallRef} colliders={"cuboid"} type={"fixed"}>
+        <RigidBody colliders={"cuboid"} type={"fixed"}>
           <Plane args={[500, 100, 1]}>
             <meshBasicMaterial visible={false} />
           </Plane>
         </RigidBody>
 
-        <RigidBody ref={videoRef} colliders={false}>
-          <Plane args={[38, 22, 1]} position={[15, 0, -0.1]}>
+        <Pointer size={[2,2,10]}/>
+
+        <RigidBody colliders={false} position={[17, 0, -15]}>
+          <Plane args={[38, 22, 1]}>
             <meshBasicMaterial color={"brown"} />
           </Plane>
           <Video
             src="/projects/sanctuary/sanctuary.mp4"
-            ratio={[16, 9]}
             scale={[2.2, 2.2, 0]}
-            position={[15, 0, 0]}
             play={location === projectProps.path}
+            geometry={videoGeometry}
           />
         </RigidBody>
 
@@ -179,12 +155,6 @@ export const ThreeSanctuary: ThreeProject = (
         ))}
       </Physics>
 
-      <PerspectiveCamera
-        ref={cameraRef}
-        position={[0, 0, 20]}
-        makeDefault={projectProps.path === location}
-      />
-
       <ambientLight intensity={1} />
       <spotLight
         position={[20, 20, 25]}
@@ -197,30 +167,27 @@ export const ThreeSanctuary: ThreeProject = (
       <directionalLight position={[0, 5, -4]} intensity={4} />
       <directionalLight position={[0, -15, -0]} intensity={4} color="red" />
 
-      <Environment background resolution={64}>
-        <Sphere scale={100} args={[1, 64, 64]}>
-          <LayerMaterial side={THREE.BackSide}>
-            <Color color="#004814" alpha={1} mode="normal" />
-            <Depth
-              colorA="#00ff9d"
-              colorB="#ff8f00"
-              alpha={0.5}
-              mode="normal"
-              near={0}
-              far={300}
-              origin={[100, 100, 100]}
-            />
-            <Noise mapping="local" type="perlin" scale={0.5} mode="softlight" />
-          </LayerMaterial>
-        </Sphere>
-      </Environment>
+      <Sphere scale={100} args={[1, 64, 64]} ref={backgroundRef}>
+        <LayerMaterial side={THREE.BackSide}>
+          <Color color="#004814" alpha={1} mode="normal" />
+          <Depth
+            colorA="#00ff9d"
+            colorB="#ff8f00"
+            alpha={1}
+            mode="normal"
+            near={0}
+            far={300}
+            origin={[100, 100, 100]}
+          />
+          <Noise mapping="local" type="perlin" scale={0.5} mode="darken" />
+        </LayerMaterial>
+      </Sphere>
     </group>
   );
 };
 
 export const HtmlSanctuary: HtmlProject = () => {
   const config = { start: "translateY(1000px)", end: "translateY(0px)" };
-  const [, setLocation] = useLocation();
 
   return (
     <div
@@ -358,7 +325,6 @@ export const HtmlSanctuary: HtmlProject = () => {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              justifyContent: "center",
             }}
           >
             <h1>
@@ -371,25 +337,6 @@ export const HtmlSanctuary: HtmlProject = () => {
                 Try it out
               </a>
             </h1>
-            <h2>
-              <a
-                href="https://gx.games/games/zvvevg/sanctuary/tracks/59d1eeef-8966-4309-8f5a-fe869942cd08/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`${css.aArrow} ${css.aArrowBlackHover}`}
-              >
-                Source code
-              </a>
-            </h2>
-            <a
-              className={`${css.trailsBackBtn}`}
-              style={{ color: "white", fontSize: "2rem", cursor: "pointer", paddingRight: "2rem", paddingTop: "4rem" }}
-              onClick={() => {
-                setLocation("/menu/projects");
-              }}
-            >
-              {"<"} back
-            </a>
           </div>
         </SlideSpan>
       </div>

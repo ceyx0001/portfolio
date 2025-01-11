@@ -4,6 +4,23 @@ import { MutableRefObject, useCallback, useRef } from "react";
 import * as THREE from "three";
 import { GOLDENRATIO } from "../../types";
 
+/*
+### Space Character Handling in DriftingText Component
+
+When using `@react-three/drei`'s `Text` component, empty spaces can cause a "fontObj undefined" error. 
+This occurs because the Text component cannot properly initialize with an empty space character.
+
+#### Solution
+To work around this issue, we:
+1. Render an 'a' character instead of a space: `{char === " " ? "a" : char}`
+2. Set the visibility to false for space characters: `visible={char !== " "}`
+
+This approach:
+- Maintains proper text spacing
+- Prevents the fontObj undefined error
+- Keeps spaces invisible in the final render
+*/
+
 export function DriftingText({
   color = "black",
   ...props
@@ -12,7 +29,6 @@ export function DriftingText({
   type CharInfo = {
     char: THREE.Object3D;
     lerpFactor: number;
-    material: THREE.MeshBasicMaterial;
   };
   const complete = useRef(false);
   const dropTextRefs = useRef<CharInfo[]>([]);
@@ -34,7 +50,6 @@ export function DriftingText({
       targetPosition: number | ((index: number) => number),
       positionAxis: "x" | "y",
       threshold: number,
-      opacityIncrement: number
     ) => {
       let allWithinThreshold = true;
 
@@ -53,7 +68,6 @@ export function DriftingText({
         } else {
           allWithinThreshold = false;
         }
-        e.material.opacity = Math.min(e.material.opacity + opacityIncrement, 1);
       });
 
       if (allWithinThreshold) {
@@ -65,30 +79,26 @@ export function DriftingText({
 
   const separate = useCallback(
     (
-      text: string = "",
+      text: string,
       animationRef: React.MutableRefObject<CharInfo[]>,
       startPositionX: number = 0,
       startPositionY: number = 0
     ) => {
       return Array.from(text).map((char, index) => (
         <Text
+          material-toneMapped={false}
+          visible={char !== " "}
           key={index}
           color={color}
           ref={(e) => {
             if (e) {
-              const material = new THREE.MeshBasicMaterial({
-                transparent: true,
-                opacity: 0,
-              });
-              e.material = material;
               animationRef.current.push({
                 char: e,
                 lerpFactor: Math.random() * (max - min) + min,
-                material: material,
               });
             }
           }}
-          font="/fonts/roboto-mono.woff"
+          font="/fonts/roboto-mono.ttf"
           position={[
             index * 0.3 - GOLDENRATIO * 3 + startPositionX,
             startPositionY,
@@ -96,7 +106,7 @@ export function DriftingText({
           ]}
           fontSize={0.3}
         >
-          {char}
+          {char === " " ? "a" : char}
         </Text>
       ));
     },
@@ -108,14 +118,13 @@ export function DriftingText({
       return;
     }
 
-    updateTextPosition(dropTextRefs, dropTargetY, "y", lerpThreshold, 0.005);
-    updateTextPosition(riseTextRefs, riseTargetY, "y", lerpThreshold, 0.005);
+    updateTextPosition(dropTextRefs, dropTargetY, "y", lerpThreshold);
+    updateTextPosition(riseTextRefs, riseTargetY, "y", lerpThreshold);
     updateTextPosition(
       slideTextRefs,
       (index) => index * 0.3 - GOLDENRATIO * 3,
       "x",
       lerpThreshold,
-      0.005
     );
   });
 
@@ -126,7 +135,6 @@ export function DriftingText({
           {
             char: THREE.Object3D;
             lerpFactor: number;
-            material: THREE.MeshBasicMaterial;
           }[]
         >;
         let startPositionY: number;

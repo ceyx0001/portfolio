@@ -1,12 +1,59 @@
 import { RotatingText } from "../../components/effects/web/RotatingText";
 import { SlideSpan } from "../../components/effects/web/SlideSpan";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import css from "../../styles.module.css";
 import { HtmlProject, ThreeProject, ThreeProjectProps } from "../../types";
 import { WaveMaterial, WaveMaterialProps } from "../../shaders/WaveMaterial";
 import { extend, MeshProps, useFrame } from "@react-three/fiber";
-import { useLocation } from "wouter";
+import { Video } from "../../components/effects/Video";
+import { useScroll } from "@react-three/drei";
 extend({ WaveMaterial });
+import * as THREE from "three";
+
+const VideoCylinder = ({
+  planeCount,
+  radius,
+  scale,
+}: {
+  planeCount: number;
+  radius: number;
+  scale: number;
+}) => {
+  const videoGeometry = useMemo(
+    () => new THREE.PlaneGeometry(16 / 8, 9 / 8),
+    []
+  );
+  const angles = Array.from(
+    { length: planeCount },
+    (_, i) => (i * Math.PI * 2) / planeCount
+  );
+
+  const scroll = useScroll();
+  const containerRef = useRef<THREE.Group>();
+
+  useFrame(() => {
+    if (!scroll || !containerRef) {
+      return;
+    }
+    containerRef.current.rotation.x = scroll.offset * (Math.PI * 2);
+  });
+
+  return (
+    <group ref={containerRef}>
+      {angles.map((angle, i) => (
+        <Video
+          key={`exile-video-${i}`}
+          geometry={videoGeometry}
+          src={`/projects/exile/${i + 1}.mp4`}
+          scale={scale}
+          position={[-0.05, Math.cos(angle) * radius, Math.sin(angle) * radius]}
+          rotation={[angle - Math.PI / 2, 0, 0]}
+          play={true}
+        />
+      ))}
+    </group>
+  );
+};
 
 export const ThreeExile: ThreeProject = (projectProps: ThreeProjectProps) => {
   const uTime = useRef(0);
@@ -43,6 +90,9 @@ export const ThreeExile: ThreeProject = (projectProps: ThreeProjectProps) => {
         position={[0, 0, 0]}
         scale={[window.innerWidth, window.innerHeight, 0]}
       />
+      <group position={[2.5, 0, 9]}>
+        <VideoCylinder planeCount={4} radius={0.28} scale={0.5} />
+      </group>
     </group>
   );
 };
@@ -50,7 +100,6 @@ export const ThreeExile: ThreeProject = (projectProps: ThreeProjectProps) => {
 export const HtmlExile: HtmlProject = () => {
   const leftAnchor = "8vw";
   const config = { start: "translateY(1000px)", end: "translateY(0px)" };
-  const [, setLocation] = useLocation();
 
   return (
     <div
@@ -65,7 +114,7 @@ export const HtmlExile: HtmlProject = () => {
         style={{
           width: "85vw",
           top: "25vh",
-          display: "flex",
+          left: leftAnchor,
         }}
         className={`${css.projectText}`}
       >
@@ -89,7 +138,7 @@ export const HtmlExile: HtmlProject = () => {
               <span>Emporium</span>
             </RotatingText>
           </span>
-          <SlideSpan {...config} style={{ width: "80%" }}>
+          <SlideSpan {...config} style={{ width: "40%" }}>
             <h2>Less hassle. More play.</h2>
             <span>
               A trading platform made for the Path of Exile community that
@@ -99,12 +148,13 @@ export const HtmlExile: HtmlProject = () => {
             </span>
           </SlideSpan>
         </div>
-        <div>
-          <SlideSpan {...config}>
-            <video controls style={{ width: "100%" }}>
-              <source src={"/projects/exile/1.mp4"} type="video/mp4" />
-            </video>
-          </SlideSpan>
+        <div
+          style={{
+            position: "absolute",
+            top: "-12vh",
+            left: "41vw",
+          }}
+        >
           <ul
             style={{
               padding: "0rem",
@@ -136,9 +186,9 @@ export const HtmlExile: HtmlProject = () => {
 
       <div
         style={{
-          width: "85vw",
+          width: "43vw",
+          left: leftAnchor,
           top: "118vh",
-          display: "flex",
         }}
         className={`${css.projectText}`}
       >
@@ -170,21 +220,13 @@ export const HtmlExile: HtmlProject = () => {
             </p>
           </>
         </SlideSpan>
-        <SlideSpan {...config}>
-          <video
-            controls
-            style={{ width: "100%", paddingLeft: "12rem", paddingTop: " 2rem" }}
-          >
-            <source src={"/projects/exile/2.mp4"} type="video/mp4" />
-          </video>
-        </SlideSpan>
       </div>
 
       <div
         style={{
           top: "232vh",
           left: leftAnchor,
-          width: "38rem",
+          width: "42rem",
           display: "flex",
           flexDirection: "column",
           gap: "1rem",
@@ -200,13 +242,7 @@ export const HtmlExile: HtmlProject = () => {
               players to easily trade in-game and alerting item owners.
             </p>
           </div>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "4rem"
-            }}
-          >
+          <div>
             <h1>
               <a
                 href="https://mirror-service-catalog.vercel.app/"
@@ -217,45 +253,6 @@ export const HtmlExile: HtmlProject = () => {
                 Visit
               </a>
             </h1>
-            <a
-              className={`${css.trailsBackBtn}`}
-              style={{ color: "white", fontSize: "2rem", cursor: "pointer" }}
-              onClick={() => {
-                setLocation("/menu/projects");
-              }}
-            >
-              {"<"} back
-            </a>
-          </div>
-          <div
-            style={{
-              position: "absolute",
-              top: "-56vh",
-              left: "35.25vw",
-              width: "56rem",
-              display: "flex",
-              flexDirection: "column",
-              gap: "1rem",
-            }}
-          >
-            <video controls style={{ width: "85%" }}>
-              <source src={"/projects/exile/3.mp4"} type="video/mp4" />
-            </video>
-          </div>
-          <div
-            style={{
-              position: "absolute",
-              top: "-7vh",
-              left: "35.25vw",
-              width: "56rem",
-              display: "flex",
-              flexDirection: "column",
-              gap: "1rem",
-            }}
-          >
-            <video controls style={{ width: "85%" }}>
-              <source src={"/projects/exile/4.mp4"} type="video/mp4" />
-            </video>
           </div>
         </SlideSpan>
       </div>

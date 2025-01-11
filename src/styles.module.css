@@ -10,13 +10,13 @@
 .trailsTextHeader {
   width: 100%;
   font-size: 4rem;
-  font-weight: 400;
+  font-weight: 800;
 }
 
 .trailsTextBody {
   width: 100%;
-  font-size: 1.2rem;
-  font-weight: 400;
+  font-size: 2rem;
+  font-weight: 500;
 }
 
 .backAnchor {
@@ -29,16 +29,16 @@
   color: white;
   margin: 0;
   padding: 0;
-  line-height: 2.5rem;
+  line-height: 2rem;
   position: absolute;
-  font-size: 1.2rem;
+  font-size: 1.25rem;
 }
 
 .projectHeader {
   color: white;
   line-height: 7rem;
   font-size: 6rem;
-  font-weight: 400;
+  font-weight: 800;
 }
 
 .aArrow {
