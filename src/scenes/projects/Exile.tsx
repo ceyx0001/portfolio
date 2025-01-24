@@ -111,12 +111,12 @@ export const HtmlExile: HtmlProject = () => {
       }}
     >
       <div
+        className={`${css.projectText}`}
         style={{
           width: "85vw",
           top: "25vh",
           left: leftAnchor,
         }}
-        className={`${css.projectText}`}
       >
         <div style={{ display: "flex", flexDirection: "column" }}>
           <span>

@@ -142,9 +142,6 @@ export const Menu = forwardRef<THREE.Group, GroupProps>(({ ...props }, ref) => {
       <CarouselScene
         ref={carouselRef}
         position={[0, 0, -1]}
-        onClick={() => {
-          if (location !== "/menu/projects") return
-        }}
       />
     </group>
   );

@@ -22,7 +22,7 @@ export const CarouselScene = React.forwardRef<THREE.Group, GroupProps>(
           props.position[2],
         ]
       : [0 - configs.length, 0, 0];
-      
+
     return (
       <group {...props} ref={ref}>
         <Items position={position} />
@@ -66,6 +66,9 @@ function Item({
         visible={location === home}
         onClick={(e) => {
           e.stopPropagation();
+          if (location !== "/menu/projects") {
+            return;
+          }
           setLocation(config.path);
         }}
       >
@@ -145,9 +148,9 @@ function Items({ w = 4, gap = 0.15, position }) {
       {scroll && (
         <Scroll html>
           {configs.map((e, i) => (
-            <group key={"carousel-html-item-" + i}>
+            <div key={"carousel-html-item-" + i}>
               {location === e.path && getHtmlComponent(e.path)}
-            </group>
+            </div>
           ))}
         </Scroll>
       )}

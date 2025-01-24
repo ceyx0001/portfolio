@@ -17,4 +17,5 @@ body {
   height: 100%;
   background: var(--background-color);
   background: linear-gradient(to top, #0a0a0a, DarkSlateGrey, black);
+  font-family: 'Roboto Mono', monospace;
 }

@@ -36,7 +36,7 @@ export const IntroductionScene = forwardRef<THREE.Group, GroupProps>(
     return (
       <group ref={ref}>
         {location === "/" && <DriftingText color="BurlyWood" />}
-        <group ref={cityRef} scale={0.001} visible={location === "/"}>
+        <group ref={cityRef} scale={0.001}>
           <group rotation={[-Math.PI / 2, 0, 0]} position={[0, -100, 0]}>
             <group position={[-175000, -200000, -17500]}>
               <mesh
