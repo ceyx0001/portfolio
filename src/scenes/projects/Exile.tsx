@@ -4,21 +4,24 @@ import { useEffect, useMemo, useRef } from "react";
 import css from "../../styles.module.css";
 import { HtmlProject, ThreeProject, ThreeProjectProps } from "../../types";
 import { WaveMaterial, WaveMaterialProps } from "../../shaders/WaveMaterial";
-import { extend, MeshProps, useFrame } from "@react-three/fiber";
+import { extend, GroupProps, MeshProps, useFrame } from "@react-three/fiber";
 import { Video } from "../../components/effects/Video";
 import { useScroll } from "@react-three/drei";
 extend({ WaveMaterial });
 import * as THREE from "three";
 
+type VideoCylinderProps = {
+  planeCount: number;
+  radius: number;
+  scale: number;
+} & GroupProps;
+
 const VideoCylinder = ({
   planeCount,
   radius,
   scale,
-}: {
-  planeCount: number;
-  radius: number;
-  scale: number;
-}) => {
+  ...props
+}: VideoCylinderProps) => {
   const videoGeometry = useMemo(
     () => new THREE.PlaneGeometry(16 / 8, 9 / 8),
     []
@@ -35,11 +38,11 @@ const VideoCylinder = ({
     if (!scroll || !containerRef) {
       return;
     }
-    containerRef.current.rotation.x = scroll.offset * (Math.PI * 2);
+    containerRef.current.rotation.x = scroll.offset * (Math.PI * 1.5);
   });
 
   return (
-    <group ref={containerRef}>
+    <group ref={containerRef} {...props}>
       {angles.map((angle, i) => (
         <Video
           key={`exile-video-${i}`}
@@ -90,9 +93,12 @@ export const ThreeExile: ThreeProject = (projectProps: ThreeProjectProps) => {
         position={[0, 0, 0]}
         scale={[window.innerWidth, window.innerHeight, 0]}
       />
-      <group position={[2.5, 0, 9]}>
-        <VideoCylinder planeCount={4} radius={0.28} scale={0.5} />
-      </group>
+      <VideoCylinder
+        planeCount={4}
+        radius={0.28}
+        scale={0.5}
+        position={[2.65, 0, 9]}
+      />
     </group>
   );
 };

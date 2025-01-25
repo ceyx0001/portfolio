@@ -47,7 +47,7 @@ export const Overlay = () => {
           left: "8vw",
           backgroundColor: "#d2a66b",
           width: "150px",
-          height: "5px",
+          height: "3px",
         }}
       />
     </div>
